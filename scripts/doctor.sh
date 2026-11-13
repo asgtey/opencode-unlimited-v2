@@ -112,6 +112,7 @@ PY
   else
     bad "V2 background service is NOT disabled — the lane's /etc/hosts pin may be bypassed"
     echo "     fix:  $REAL service set disabled true"
+    echo "     (it stays enabled only while you pair from another device)"
   fi
 else
   warn "service.json not found — check: $REAL service set disabled true"

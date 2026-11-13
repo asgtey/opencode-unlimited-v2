@@ -6,6 +6,17 @@ Run `opencode-unlimited-doctor` first. Every red line has a fix printed next to 
 
 ## Install-time
 
+### `run me as your normal user, not root`
+
+Expected. The project installs per user and the guard is a user service. Create a
+normal user and re-run without `sudo`:
+
+```bash
+adduser asghar
+usermod -aG wheel asghar     # Debian/Ubuntu/Mint: -aG sudo
+su - asghar
+```
+
 ### The one-command install stops immediately
 
 ```bash
@@ -169,21 +180,20 @@ Check the error text:
 - `Free usage limit reached ...` → IP-based; rotation should help.
 - `OpenCode Go`, `workspace`, `budget` → account-based; rotation cannot help.
 
-### Desktop app ignores the rotation
-
-The app runs its own bundled CLI, not `~/.local/bin/opencode`. Check and fix:
-
-```bash
-~/.local/share/opencode-unlimited/scripts/desktop-patch.sh status
-~/.local/share/opencode-unlimited/scripts/desktop-patch.sh install   # app must be closed
-```
-
-An app update restores the original binary; run `install` again afterwards.
-
 ### Pairing does not work
 
-Expected: V2 pairing requires the shared service, which this project disables.
-`opencode service unset disabled` restores it (and re-enables the shared server).
+Expected: V2 pairing needs the shared background service, and this project
+disables it. Re-enable it only while you pair, then turn it back off:
+
+```bash
+opencode service unset disabled
+opencode service start
+opencode pair
+# ... connect from the other device ...
+opencode service set disabled true
+```
+
+Full walkthrough (LAN, SSH tunnel, remote): [PAIRING.md](PAIRING.md).
 
 ---
 

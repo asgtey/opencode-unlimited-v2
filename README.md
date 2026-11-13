@@ -3,7 +3,7 @@
 Bypass OpenCode's free-tier limit on Linux. **One command to install.** When the
 wall hits, your IPv6 identity is rotated automatically and you keep working.
 
-[فارسی](README.fa.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [How it works](docs/ARCHITECTURE.md) · [Security](SECURITY.md)
+[فارسی](README.fa.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [Pairing](docs/PAIRING.md) · [How it works](docs/ARCHITECTURE.md) · [Security](SECURITY.md)
 
 > **Unofficial.** Not affiliated with OpenCode or Cloudflare. Rotating identity to
 > extend a free tier may break the provider's terms. Use at your own risk.
@@ -27,6 +27,27 @@ Cloudflare WARP can connect. Tested on Linux Mint 22.3 and Ubuntu 24.04.
 If unprivileged user namespaces are blocked (Ubuntu 24.04 and Mint 22.x do this by
 default), the installer stops and prints the one-line `sysctl` fix. Run it, then run
 the install command again.
+
+### Never run it as root
+
+`install.sh` stops with `run me as your normal user, not root`, and that is
+deliberate: everything is installed per user (`~`), the guard is a **user**
+systemd service, and the sudoers rules are tied to your account. As root it would
+install into `/root` and grant nothing useful.
+
+Only three steps need root, and the installer asks for it through `sudo` itself.
+So do **not** use `sudo bash get.sh` or `sudo ./install.sh`.
+
+If you are logged in as root (common on a fresh VPS or container), create a normal
+user first:
+
+```bash
+adduser asghar                     # Debian, Ubuntu, Mint
+usermod -aG sudo asghar            # Fedora/Arch: usermod -aG wheel asghar
+su - asghar                        # log in as that user
+```
+
+Then run the install command again, without `sudo`.
 
 ## When the limit hits
 
@@ -81,15 +102,33 @@ The WARP trick itself, the `/64` rotation and the kill-switch are unchanged.
 - Rotation is refused if the kill-switch chain is missing.
 - Emergency exit and residual risks: [SECURITY.md](SECURITY.md).
 
-## Desktop app
+## Use it from another device (`opencode pair`)
 
-The desktop app runs its own bundled CLI, so it skips the lane. Optional fix:
+Pairing needs the **shared** background service, and this project disables it. Turn
+it on just long enough to pair:
 
 ```bash
-~/.local/share/opencode-unlimited/scripts/desktop-patch.sh install
+opencode service unset disabled
+opencode service start
+opencode pair                 # copy the link or scan the QR
 ```
 
-Run it again after every app update. `undo` puts the original back.
+Open the link on the other device. Over SSH, forward the port first:
+
+```bash
+ssh -L 49374:127.0.0.1:49374 asghar@your-server
+```
+
+Then close the door again — this is what keeps the terminal lane intact:
+
+```bash
+opencode service set disabled true
+```
+
+Sessions started from a paired browser or app run on the shared server: they still
+leave through WARP and still get `/64` rotation, but not the per-launch random
+edge. Same-LAN, SSH-tunnel and `--remote` walkthroughs, plus the security notes:
+[docs/PAIRING.md](docs/PAIRING.md).
 
 ## Uninstall
 
@@ -102,6 +141,7 @@ Your sessions, auth and backups are untouched.
 ## Docs
 
 - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — every error and its fix
+- [docs/PAIRING.md](docs/PAIRING.md) — connect from another device with `opencode pair`
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the namespace, DB check and firewall work
 - [docs/V1-V2.md](docs/V1-V2.md) — line-by-line diff with the upstream V1 scripts
 - [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md)

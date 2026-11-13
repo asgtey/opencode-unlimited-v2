@@ -53,7 +53,18 @@ echo "  ================================="
 echo ""
 
 # ---------------------------------------------------------------- platform
-[ "$(id -u)" = 0 ] && die "run me as your normal user, not root"
+# Everything this project installs is per-user. Running the installer as root
+# would put files in /root, bind the user service to the wrong systemd manager
+# and leave the sudoers rules pointing at a user that never logs in.
+if [ "$(id -u)" = 0 ]; then
+  bad "run me as your normal user, not root"
+  say "if you only have root (fresh VPS, container), create a normal user first:"
+  say "  adduser asghar                     # Debian/Ubuntu/Mint"
+  say "  usermod -aG sudo asghar            # or: usermod -aG wheel asghar (Fedora/Arch)"
+  say "  su - asghar                        # log in as that user"
+  say "then run the install command again, without sudo."
+  exit 1
+fi
 command -v systemctl >/dev/null 2>&1 || die "systemd not found — linux+systemd only"
 command -v python3 >/dev/null 2>&1 || die "python3 required (needed by guard/doctor)"
 command -v curl    >/dev/null 2>&1 || die "curl required"
@@ -559,7 +570,6 @@ ok "DONE. close & reopen your terminal, then run:  opencode"
 say "first launch: sign in once to the free tier if asked."
 say "wall hit? zen-guard rotates automatically — wait ~15s, re-send."
 say "checks:  ${BRAND}-doctor      manual new identity:  ${BRAND}-hop"
-say "desktop app (optional):  $DEST/scripts/desktop-patch.sh install"
 if [ -d "$BACKUP_ROOT" ]; then
   say "V1 backup (one-way V2 migration): $BACKUP_ROOT"
 fi

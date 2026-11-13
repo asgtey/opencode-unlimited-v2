@@ -89,7 +89,6 @@ so traffic does not fall back to the physical interface.
 | `scripts/zen-guard.sh` | DB/log wall detector + automatic rotation |
 | `scripts/zen-hop.sh` | manual rotation |
 | `scripts/doctor.sh` | read-only diagnostics |
-| `scripts/desktop-patch.sh` | wrap the desktop app's bundled CLI so it uses the lane |
 
 ## State
 

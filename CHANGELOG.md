@@ -4,6 +4,32 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.2] — 2026-11-13
+
+Root-user guidance and `opencode pair`. Desktop app support removed.
+
+### Added
+
+- `docs/PAIRING.md`: connect from another machine with `opencode pair` — same LAN,
+  SSH port forward, and `--remote` through OpenTunnel, including the
+  enable → pair → disable cycle around the shared service.
+- `README.md` / `README.fa.md` explain why the installer refuses to run as root,
+  with `adduser` / `usermod` steps for VPS and container users.
+- `install.sh` prints those same steps instead of a one-line error when it is
+  started as root.
+
+### Removed
+
+- `scripts/desktop-patch.sh` and every reference to the OpenCode desktop app. The
+  project targets the terminal TUI only.
+
+### Changed
+
+- `doctor.sh` reminds you to re-disable the shared service after pairing.
+- The "pairing does not work" troubleshooting entry now points at the real
+  procedure instead of calling it unsupported.
+- `docs/V1-V2.md` and `SECURITY.md` no longer describe the desktop app.
+
 ## [2.0.1] — 2026-11-13
 
 Documentation and packaging pass: install with a single command, simpler docs,
@@ -78,5 +104,6 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.2]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.2
 [2.0.1]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.1
 [2.0.0]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.0

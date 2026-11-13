@@ -87,10 +87,10 @@ rotation on a desktop. Do not use this project on a shared machine.
 
 ### 3. Wrapper bypass
 
-Only `~/.local/bin/opencode` goes through the lane. The desktop app, IDE extensions
-and any script that calls `~/.opencode/bin/opencode` directly bypass the per-launch
-edge pin. The kill-switch and IP rotation still apply at the host level, but the
-`/etc/hosts` pin does not.
+Only `~/.local/bin/opencode` goes through the lane. IDE extensions and any script
+that calls `~/.opencode/bin/opencode` directly bypass the per-launch edge pin. The
+kill-switch and IP rotation still apply at the host level, but the `/etc/hosts`
+pin does not.
 
 ### 4. Provider terms
 

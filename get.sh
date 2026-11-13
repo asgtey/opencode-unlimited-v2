@@ -52,6 +52,17 @@ echo ""
 
 command -v tar >/dev/null 2>&1 || die "tar is required"
 
+# Everything is per-user; root would install into /root and grant nothing.
+if [ "$(id -u)" = 0 ]; then
+  bad "run this as your normal user, not root"
+  say "if you only have root (fresh VPS, container), create a user first:"
+  say "  adduser asghar"
+  say "  usermod -aG sudo asghar     # Fedora/Arch: usermod -aG wheel asghar"
+  say "  su - asghar"
+  say "then run the same command again, without sudo."
+  exit 1
+fi
+
 if   command -v curl >/dev/null 2>&1; then fetch() { curl -fsSL "$1"; }
 elif command -v wget >/dev/null 2>&1; then fetch() { wget -qO- "$1"; }
 else die "curl or wget is required"

@@ -8,6 +8,7 @@
 <p dir="rtl" align="right">
 <a href="README.md">English</a> ·
 <a href="docs/TROUBLESHOOTING.md">عیب‌یابی</a> ·
+<a href="docs/PAIRING.md">اتصال از دستگاه دیگر</a> ·
 <a href="docs/ARCHITECTURE.md">طرز کار</a> ·
 <a href="SECURITY.md">امنیت</a>
 </p>
@@ -41,6 +42,35 @@
   <li>دسترسی <code>sudo</code> و <code>python3</code></li>
   <li>شبکه‌ای که Cloudflare WARP در آن وصل شود</li>
 </ul>
+
+<h3 dir="rtl" align="right">با root اجرا نکن</h3>
+
+<p dir="rtl" align="right">
+<code>install.sh</code> اگر با root اجرا شود با پیام
+<code>run me as your normal user, not root</code> متوقف می‌شود. این عمدی است:
+همه‌چیز داخل پوشهٔ کاربر نصب می‌شود، guard یک سرویس <b>کاربر</b> است و قواعد
+sudoers به همان حساب گره خورده‌اند. با root همه‌چیز داخل <code>/root</code>
+نصب می‌شود و به درد نمی‌خورد.
+</p>
+
+<p dir="rtl" align="right">
+فقط سه مرحله به root نیاز دارد و خود نصب‌کننده با <code>sudo</code> می‌پرسد. پس
+<code>sudo bash get.sh</code> یا <code>sudo ./install.sh</code> اجرا نکن.
+</p>
+
+<p dir="rtl" align="right">
+اگر با root وارد شده‌ای (روی VPS تازه یا داخل کانتینر رایج است)، اول یک کاربر
+عادی بساز:
+</p>
+
+<pre dir="ltr" align="left"><code>adduser asghar
+usermod -aG sudo asghar
+su - asghar</code></pre>
+
+<p dir="rtl" align="right">
+روی Fedora یا Arch خط دوم می‌شود <code>usermod -aG wheel asghar</code>.
+بعد دوباره دستور نصب را اجرا کن، این بار بدون <code>sudo</code>.
+</p>
 
 <h2 dir="rtl" align="right">وقتی محدودیت خورد</h2>
 
@@ -110,18 +140,45 @@ OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخه�
   <li>خروج اضطراری و ریسک‌های باقی‌مانده: <a href="SECURITY.md">SECURITY.md</a></li>
 </ul>
 
-<h2 dir="rtl" align="right">اپ دسکتاپ (اختیاری)</h2>
+<h2 dir="rtl" align="right">اتصال از یک دستگاه دیگر (opencode pair)</h2>
 
 <p dir="rtl" align="right">
-اپ دسکتاپ نسخهٔ CLI خودش را اجرا می‌کند و از لین عبور نمی‌کند. اگر با اپ دسکتاپ کار
-می‌کنی، یک بار این را بزن (اپ باید بسته باشد):
+<code>opencode pair</code> یک لینک یک‌بارمصرف و یک QR می‌سازد که مرورگر یا اپ
+OpenCode را به <b>سرور مشترک</b> وصل می‌کند. لینک‌ها ۵ دقیقه اعتبار دارند و فقط
+یک بار کار می‌کنند.
 </p>
 
-<pre dir="ltr" align="left"><code>~/.local/share/opencode-unlimited/scripts/desktop-patch.sh install</code></pre>
+<p dir="rtl" align="right">
+مهم: pair به سرویس مشترک نیاز دارد و این پروژه آن را خاموش کرده است. پس برای
+pair کردن موقتاً روشنش کن:
+</p>
+
+<pre dir="ltr" align="left"><code>opencode service unset disabled
+opencode service start
+opencode pair</code></pre>
 
 <p dir="rtl" align="right">
-بعد از هر آپدیت اپ دسکتاپ دوباره اجرا کن. برای برگشت:
-<code>... desktop-patch.sh undo</code>
+لینک را روی دستگاه دیگر باز کن. اگر از راه SSH وصل می‌شوی، اول پورت را فوروارد کن:
+</p>
+
+<pre dir="ltr" align="left"><code>ssh -L 49374:127.0.0.1:49374 asghar@your-server</code></pre>
+
+<p dir="rtl" align="right">
+بعد از تمام شدن کار، حتماً دوباره خاموشش کن — همین کار لین ترمینال را سالم
+نگه می‌دارد:
+</p>
+
+<pre dir="ltr" align="left"><code>opencode service set disabled true</code></pre>
+
+<p dir="rtl" align="right">
+نشست‌هایی که از مرورگر یا اپ pair شده باز می‌شوند روی سرور مشترک اجرا می‌شوند:
+ترافیکشان باز هم از WARP می‌رود و <code>/64</code> باز هم عوض می‌شود، ولی edge
+تصادفی مخصوص هر اجرا را ندارند.
+</p>
+
+<p dir="rtl" align="right">
+راهنمای کامل (شبکهٔ محلی، تونل SSH و <code>--remote</code>) و نکات امنیتی:
+<a href="docs/PAIRING.md">docs/PAIRING.md</a>
 </p>
 
 <h2 dir="rtl" align="right">حذف</h2>
@@ -136,6 +193,7 @@ OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخه�
 
 <ul dir="rtl">
   <li><a href="docs/TROUBLESHOOTING.md">docs/TROUBLESHOOTING.md</a> — همهٔ خطاها و راه‌حلشان</li>
+  <li><a href="docs/PAIRING.md">docs/PAIRING.md</a> — اتصال از دستگاه دیگر با <code>opencode pair</code></li>
   <li><a href="docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a> — جزئیات فنی namespace، دیتابیس و فایروال</li>
   <li><a href="docs/V1-V2.md">docs/V1-V2.md</a> — تفاوت خط‌به‌خط با نسخهٔ اصلی</li>
   <li><a href="CONTRIBUTING.md">CONTRIBUTING.md</a> · <a href="CHANGELOG.md">CHANGELOG.md</a></li>

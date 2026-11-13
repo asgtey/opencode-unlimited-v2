@@ -45,5 +45,6 @@ jobs:
           test -f SECURITY.md
           test -f docs/ARCHITECTURE.md
           test -f docs/TROUBLESHOOTING.md
+          test -f docs/PAIRING.md
           test -f docs/V1-V2.md
           echo "docs present"
