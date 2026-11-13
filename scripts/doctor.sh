@@ -247,4 +247,5 @@ fi
 
 echo ""
 echo "  all green = work. red = run the fix printed next to it."
+echo "  log:  tail -n 20 ~/.local/share/opencode-unlimited/guard/guard.log"
 echo ""

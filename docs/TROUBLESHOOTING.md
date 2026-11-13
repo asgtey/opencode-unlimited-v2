@@ -1,6 +1,9 @@
 # Troubleshooting
 
 Run `opencode-unlimited-doctor` first. Every red line has a fix printed next to it.
+If you want the raw story instead, the guard's log is at
+`~/.local/share/opencode-unlimited/guard/guard.log`
+(`tail -n 20 ~/.local/share/opencode-unlimited/guard/guard.log`).
 
 ---
 
@@ -151,7 +154,16 @@ kill-switch is then blocking traffic by design. Use the
 
 ### Wall seen but no rotation in `guard.log`
 
+Start with the log itself — twenty lines are usually enough:
+
 ```bash
+tail -n 20 ~/.local/share/opencode-unlimited/guard/guard.log
+```
+
+If that says nothing useful, widen it and check the service:
+
+```bash
+tail -n 100 ~/.local/share/opencode-unlimited/guard/guard.log
 systemctl --user status opencode-unlimited-guard --no-pager
 journalctl --user -u opencode-unlimited-guard -n 50 --no-pager
 sudo -n /usr/sbin/iptables -nL OUC_LEAKGUARD

@@ -108,6 +108,20 @@
 <code>uninstall.sh</code> همه را برمی‌دارد.
 </p>
 
+<h3 dir="rtl" align="right">لاگ‌ها</h3>
+
+<p dir="rtl" align="right">
+اگر چیزی درست کار نکرد، آخرین خطوط لاگ guard معمولاً می‌گوید چرا:
+</p>
+
+<pre dir="ltr" align="left"><code>tail -n 20 ~/.local/share/opencode-unlimited/guard/guard.log</code></pre>
+
+<p dir="rtl" align="right">
+<code>opencode-unlimited-doctor</code> همان تصویر را در یک صفحه نشان می‌دهد. فایل
+کم‌کم بزرگ می‌شود، پس <code>-n 20</code> معمولاً کافی است؛ بعد از یک روز شلوغ
+<code>-n 100</code> بزن.
+</p>
+
 <h2 dir="rtl" align="right">چرا این نسخه ساخته شد</h2>
 
 <p dir="rtl" align="right">

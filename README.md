@@ -74,6 +74,17 @@ Everything lives in `~/.local/share/opencode-unlimited/`. System touches are two
 systemd units, one sudoers file and one firewall chain — all removed by
 `uninstall.sh`.
 
+### Logs
+
+If something looks wrong, the guard's last lines usually say why:
+
+```bash
+tail -n 20 ~/.local/share/opencode-unlimited/guard/guard.log
+```
+
+`opencode-unlimited-doctor` prints the same picture in one screen. The file grows
+slowly, so `-n 20` is normally enough; use `-n 100` after a busy day.
+
 ## Pair with your phone or another computer
 
 Pairing is already set up. Just run:

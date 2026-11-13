@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.6] — 2026-11-13
+
+### Changed
+
+- The guard log command —
+  `tail -n 20 ~/.local/share/opencode-unlimited/guard/guard.log` — is now in both
+  READMEs, `docs/TROUBLESHOOTING.md`, the installer's closing hints, and the last
+  line of `doctor.sh`. It was already buried in the bug-report section.
+
 ## [2.0.5] — 2026-11-13
 
 Access is now controlled: the repo is private and installs need a personal code.
@@ -159,6 +168,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.6]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.6
 [2.0.5]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.5
 [2.0.4]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.4
 [2.0.3]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.3

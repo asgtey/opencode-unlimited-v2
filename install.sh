@@ -753,6 +753,7 @@ ok "DONE. close & reopen your terminal, then run:  opencode"
 say "first launch: sign in once to the free tier if asked."
 say "wall hit? zen-guard rotates automatically — wait ~15s, re-send."
 say "checks:  ${BRAND}-doctor      manual new identity:  ${BRAND}-hop"
+say "if something looks wrong:  tail -n 20 ~/.local/share/$BRAND/guard/guard.log"
 if [ "$PAIR_MODE" = 0 ]; then
   say "pairing is off (strict mode). enable it:  $OC_REAL service unset disabled && $OC_REAL service start"
 else
