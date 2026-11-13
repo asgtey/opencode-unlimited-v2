@@ -460,7 +460,6 @@ chmod +x "$DEST/scripts/"*.sh
 cp "$SRC/uninstall.sh" "$DEST/uninstall.sh" 2>/dev/null && chmod +x "$DEST/uninstall.sh"
 ln -sf "$DEST/scripts/zen-hop.sh" "$HOME/.local/bin/${BRAND}-hop"
 ln -sf "$DEST/scripts/doctor.sh"  "$HOME/.local/bin/${BRAND}-doctor"
-ln -sf "$DEST/scripts/host-share-check.sh" "$HOME/.local/bin/${BRAND}-share"
 [ -f "$DEST/uninstall.sh" ] && ln -sf "$DEST/uninstall.sh" "$HOME/.local/bin/${BRAND}-uninstall"
 ok "scripts in $DEST"
 
