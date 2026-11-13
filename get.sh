@@ -1,13 +1,12 @@
 #!/usr/bin/env bash
 # One-command install / uninstall.
 #
-#   install   :  curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
-#   uninstall :  ... | bash -s -- --token YOUR-CODE --uninstall
+#   install   :  curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash
+#   uninstall :  ... | bash -s -- --uninstall
 #
-# This repository is private: an access code (a GitHub fine-grained token with
-# read-only access to it) is required to download the bundle. The public
-# launcher at asgtey/ou-start forwards the code here; you can also run this file
-# directly with OUC_TOKEN set.
+# This repository is public, so no access code is needed. --token / OUC_TOKEN is
+# still accepted for forks or private mirrors; the bundle is then fetched through
+# the API with the bearer token instead of the anonymous mirrors.
 #
 # Why a bootstrap: install.sh needs ./scripts next to it. Piping a single file
 # through bash would leave it without that folder, so this downloads the whole
@@ -36,21 +35,19 @@ while [ $# -gt 0 ]; do
   esac
   shift
 done
-# The launcher already exported it, but keep it in scope for the recursive use.
+# The token is optional; keep it in scope for the fetch helpers.
 OUC_TOKEN="$TOKEN"; export OUC_TOKEN
 
 if [ "$ACTION" = help ]; then
   cat <<EOF
 
-  opencode-unlimited-v2 — one-command installer (private bundle)
+  opencode-unlimited-v2 — one-command installer
 
-    install    curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
-    uninstall  curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE --uninstall
-
-  Ask asgtey for an access code. One code per person; it can be revoked.
+    install    curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash
+    uninstall  curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash -s -- --uninstall
 
   Environment:
-    OUC_TOKEN   access code (same as --token)
+    OUC_TOKEN   optional access code (forks / private mirrors only)
     OUC_REF     git ref to use (default: main)
     OUC_REPO    owner/name override (for forks)
 
@@ -118,14 +115,13 @@ if [ -z "$ROOT" ] && command -v git >/dev/null 2>&1; then
 fi
 
 if [ -z "$ROOT" ] || [ ! -f "$ROOT/install.sh" ]; then
-  if [ -z "$TOKEN" ]; then
-    bad "could not download the bundle"
-    say "this bundle is private — you need an access code:"
-    say "  curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE"
-    say "ask asgtey for a code (one per person, revocable)."
+  bad "could not download the bundle"
+  if [ -n "$TOKEN" ]; then
+    say "the access code was rejected (or expired) and the mirrors failed."
+    say "without a code the public repository is used — try again without --token."
   else
-    bad "could not download the bundle"
-    say "the access code was rejected or has expired. ask asgtey for a new one."
+    say "check your connection, then run the same command again."
+    say "manual fallback:  git clone https://github.com/$REPO.git"
   fi
   exit 1
 fi

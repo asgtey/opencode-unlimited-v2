@@ -12,11 +12,8 @@ wall hits, your IPv6 identity is rotated automatically and you keep working.
 
 ## Install (one command)
 
-This repository is **private**. You need an access code from [@asgtey](https://github.com/asgtey)
-— one per person, revocable. Paste it in place of `YOUR-CODE`:
-
 ```bash
-curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
+curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash
 ```
 
 Then close and reopen your terminal, and run `opencode` like always.
@@ -125,14 +122,13 @@ The WARP trick itself, the `/64` rotation and the kill-switch are unchanged.
 ## Uninstall
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE --uninstall
+curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash -s -- --uninstall
 ```
 
 Your sessions, auth and backups are untouched.
 
 ## Docs
 
-- [docs/ACCESS.md](docs/ACCESS.md) — who can install, and how to revoke a code
 - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — every error and its fix
 - [docs/PAIRING.md](docs/PAIRING.md) — connect from another device with `opencode pair`
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the namespace, DB check and firewall work

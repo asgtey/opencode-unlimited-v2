@@ -4,6 +4,25 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.7] — 2026-11-13
+
+The repository is public again: one command, no access code.
+
+### Changed
+
+- `asgtey/opencode-unlimited-v2` is public. Install and uninstall go back to the
+  plain one-liners on this repository's own `get.sh`.
+- `get.sh` no longer requires a code. `--token` / `OUC_TOKEN` is still accepted (and
+  silently used) for forks and private mirrors; without it the public mirrors
+  (codeload, then `git clone`) are used.
+- `docs/ACCESS.md` now says access is open, and keeps the note for anyone who still
+  has an old code.
+
+### Removed
+
+- The "private repository / access code required" wording from both READMEs,
+  `docs/TROUBLESHOOTING.md` and `docs/ARCHITECTURE.md`.
+
 ## [2.0.6] — 2026-11-13
 
 ### Changed
@@ -168,6 +187,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.7]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.7
 [2.0.6]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.6
 [2.0.5]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.5
 [2.0.4]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.4

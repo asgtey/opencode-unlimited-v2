@@ -25,13 +25,10 @@
 <h2 dir="rtl" align="right">نصب با یک دستور</h2>
 
 <p dir="rtl" align="right">
-این مخزن <b>خصوصی</b> است. برای نصب باید یک <b>کد دسترسی</b> داشته باشی؛ کد را از
-<a href="https://github.com/asgtey">asgtey</a> بگیر — برای هر نفر یک کد جدا، و
-هر وقت بخواهد می‌تواند همان کد را باطل کند. جای <code>YOUR-CODE</code> کد خودت را
-بگذار:
+این مخزن عمومی است؛ به هیچ کد دسترسی یا حساب گیت‌هاب نیاز نداری. فقط این را بزن:
 </p>
 
-<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE</code></pre>
+<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash</code></pre>
 
 <p dir="rtl" align="right">
 بعد ترمینال را ببند و باز کن، و مثل همیشه بنویس <code>opencode</code>.
@@ -40,7 +37,6 @@
 <p dir="rtl" align="right">
 این دستور کل پروژه را در یک پوشهٔ موقت دانلود می‌کند، <code>install.sh</code> را اجرا
 می‌کند (رمز sudo را می‌پرسد) و بعد پوشه را پاک می‌کند. به <code>git</code> نیازی نیست.
-کد فقط برای <b>دانلود</b> لازم است؛ بعد از نصب دیگر پرسیده نمی‌شود.
 </p>
 
 <p dir="rtl" align="right"><b>پیش‌نیازها:</b></p>
@@ -52,10 +48,11 @@
 </ul>
 
 <p dir="rtl" align="right">
-اگر کد اشتباه یا منقضی باشد، همان اول با پیام
-<code>the code was rejected or has expired</code> متوقف می‌شود و چیزی دانلود نمی‌شود.
-جزئیات کدها و باطل کردنشان: <a href="docs/ACCESS.md">docs/ACCESS.md</a>
+اگر دانلود انجام نشد، یعنی مشکل شبکه است؛ همان دستور را دوباره بزن. راه دستی:
 </p>
+
+<pre dir="ltr" align="left"><code>git clone https://github.com/asgtey/opencode-unlimited-v2.git
+cd opencode-unlimited-v2 && ./install.sh</code></pre>
 
 <h3 dir="rtl" align="right">با root اجرا کنی، خودش کاربر می‌سازد</h3>
 
@@ -181,7 +178,7 @@ pair از قبل آماده است. فقط این را بزن:
 
 <h2 dir="rtl" align="right">حذف</h2>
 
-<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE --uninstall</code></pre>
+<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash -s -- --uninstall</code></pre>
 
 <p dir="rtl" align="right">
 نشست‌ها، ورودها و بکاپ‌هایت دست‌نخورده می‌مانند.

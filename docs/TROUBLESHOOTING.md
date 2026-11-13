@@ -21,36 +21,15 @@ usermod -aG wheel asghar     # Debian/Ubuntu/Mint: -aG sudo
 su - asghar
 ```
 
-### `the code was rejected or has expired`
+### `could not download the bundle`
 
-The bundle is private, so the install command needs your access code:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
-```
-
-Common causes: a typo or a line-wrap when copying the code; an expired code; a
-code you deleted; a code that does not have **Contents: Read** on
-`asgtey/opencode-unlimited-v2`. Ask asgtey for a new one — the old code keeps
-working until it is deleted. How codes work: [ACCESS.md](ACCESS.md).
-
-### The one-command install stops immediately
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
-```
-
-`get.sh` downloads the bundle to a temp folder. If you see
-`could not download the bundle` **and** your code is new, the network is blocked or
-`curl`/`wget` is missing. The manual route always works:
+The repository is public, so there is no code to worry about — this is a network
+problem. Run the command again; if it keeps failing, use the manual route:
 
 ```bash
 git clone https://github.com/asgtey/opencode-unlimited-v2.git
 cd opencode-unlimited-v2 && ./install.sh
 ```
-
-`git clone` asks for a username and password: the password is your access code, the
-username can be anything (for example `x-access-token`).
 
 If sudo never asks for a password, you are not on a terminal (for example inside a
 CI job). Run the `git clone` route instead.
