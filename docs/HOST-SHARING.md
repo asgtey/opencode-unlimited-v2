@@ -104,6 +104,25 @@ dependency tree, keep the real copy on the VM disk and sync with git.
 
 ---
 
+## Paired sessions (`opencode pair`)
+
+Pairing connects your phone or browser to the server running **in the VM**, so a
+paired client sees exactly what the VM sees — nothing more. A folder on the host
+becomes reachable only after it is mounted in the VM (steps 1–2 above). Then open
+that path in the paired UI:
+
+```
+/mnt/hgfs/my-project
+```
+
+Edits made there land on the host, same as in the terminal.
+
+One difference: paired sessions use the shared server, which sits outside the
+lane, so they do **not** get the random Cloudflare edge per launch. WARP and the
+`/64` rotation still apply.
+
+---
+
 ## Alternatives
 
 **SMB (Windows share, faster):**

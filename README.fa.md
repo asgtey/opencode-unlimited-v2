@@ -151,6 +151,48 @@ OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخه�
   <li>خروج اضطراری و ریسک‌های باقی‌مانده: <a href="SECURITY.md">SECURITY.md</a></li>
 </ul>
 
+<h2 dir="rtl" align="right">پروژه‌ای که روی ویندوز یا مک است</h2>
+
+<p dir="rtl" align="right">
+لینوکس داخل ماشین مجازی است و پروژه روی ویندوز؛ پوشه را به ماشین وصل کن و داخلش
+<code>opencode</code> را بزن. بقیه‌اش مثل همیشه است.
+</p>
+
+<p dir="rtl" align="right">
+<b>۱. روی ویندوز (VMware):</b> ماشین را کامل خاموش کن، بعد
+<code>VM → Settings → Options → Shared Folders</code>، گزینهٔ <b>Always enabled</b> و
+<b>Add…</b> (مسیر پوشه و یک اسم؛ تیک Read-only را نزن).
+</p>
+
+<p dir="rtl" align="right"><b>۲. داخل مینت:</b></p>
+
+<pre dir="ltr" align="left"><code>sudo apt install -y open-vm-tools open-vm-tools-desktop
+sudo mkdir -p /mnt/hgfs
+sudo vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other,uid=$(id -u),gid=$(id -g)</code></pre>
+
+<p dir="rtl" align="right">
+آن <code>uid</code> و <code>gid</code> مهم‌اند؛ وگرنه فایل‌ها مال root می‌شوند و
+<code>opencode</code> نمی‌تواند ذخیره کند.
+</p>
+
+<p dir="rtl" align="right"><b>۳. بازش کن:</b></p>
+
+<pre dir="ltr" align="left"><code>cd /mnt/hgfs/my-project
+opencode</code></pre>
+
+<p dir="rtl" align="right">
+دو دستور git هم احتمالاً لازم می‌شود:
+</p>
+
+<pre dir="ltr" align="left"><code>git config --global --add safe.directory /mnt/hgfs/my-project
+git -C /mnt/hgfs/my-project config core.filemode false</code></pre>
+
+<p dir="rtl" align="right">
+پوشهٔ مشترک symlink ندارد، تغییر فایل را فوری نمی‌فهمد و برای
+<code>node_modules</code> کند است. روش‌های SMB، SSHFS، VirtualBox و توضیح pair:
+<a href="docs/HOST-SHARING.fa.md">docs/HOST-SHARING.fa.md</a>
+</p>
+
 <h2 dir="rtl" align="right">اتصال از گوشی یا کامپیوتر دیگر (pair)</h2>
 
 <p dir="rtl" align="right">

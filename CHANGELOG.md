@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.9] — 2026-11-13
+
+### Added
+
+- The host-folder steps are now in **both READMEs**, not only in `docs/`.
+- `docs/HOST-SHARING.md` explains how `opencode pair` relates to a host folder:
+  a paired client sees the VM's paths, so the share must be mounted in the VM
+  first; paired sessions skip the random edge but keep WARP and `/64` rotation.
+
 ## [2.0.8] — 2026-11-13
 
 ### Added
@@ -197,6 +206,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.9]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.9
 [2.0.8]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.8
 [2.0.7]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.7
 [2.0.6]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.6

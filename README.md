@@ -82,6 +82,44 @@ tail -n 20 ~/.local/share/opencode-unlimited/guard/guard.log
 `opencode-unlimited-doctor` prints the same picture in one screen. The file grows
 slowly, so `-n 20` is normally enough; use `-n 100` after a busy day.
 
+## Project that lives on your Windows or macOS host
+
+Linux in a VM, project on the host? Share the folder into the VM and run `opencode`
+inside it. The lane does not care where the files are.
+
+**1. Host (VMware):** power the VM off, then `VM → Settings → Options → Shared
+Folders` → **Always enabled** → **Add…** (host path, name, *Read-only* off).
+
+**2. VM:**
+
+```bash
+sudo apt install -y open-vm-tools open-vm-tools-desktop
+sudo mkdir -p /mnt/hgfs
+sudo vmhgfs-fuse .host:/ /mnt/hgfs -o allow_other,uid=$(id -u),gid=$(id -g)
+```
+
+The `uid`/`gid` part is the important one: without it the files belong to `root`
+and OpenCode cannot save.
+
+**3. Open it:**
+
+```bash
+cd /mnt/hgfs/my-project
+opencode            # or: opencode /mnt/hgfs/my-project
+```
+
+Two `git` commands you will probably need, because the files arrive owned by
+another user id and marked executable:
+
+```bash
+git config --global --add safe.directory /mnt/hgfs/my-project
+git -C /mnt/hgfs/my-project config core.filemode false
+```
+
+Shared folders have no symlinks and no file-change notifications, and they are slow
+for `node_modules`/`venv`. SMB, SSHFS, VirtualBox, and how pairing fits in:
+[docs/HOST-SHARING.md](docs/HOST-SHARING.md).
+
 ## Pair with your phone or another computer
 
 Pairing is already set up. Just run:
