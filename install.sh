@@ -186,6 +186,20 @@ if [ "$(id -u)" = 0 ]; then
   loginctl enable-linger "$NEWUSER" >/dev/null 2>&1 \
     || say "! could not enable lingering for '$NEWUSER' (the guard needs it after reboot)"
 
+  # The second pass needs that user's systemd manager (user@UID.service), and
+  # `runuser -l` does not create one the way a real login does. enable-linger
+  # usually starts it, but not instantly — so start it explicitly and wait for
+  # /run/user/UID. Without this a fresh root install dies with
+  # "user systemd is not running (are you inside a bare container?)".
+  NEWUID="$(id -u "$NEWUSER" 2>/dev/null || true)"
+  if [ -n "$NEWUID" ]; then
+    systemctl start "user@$NEWUID.service" >/dev/null 2>&1 || true
+    for i in $(seq 1 15); do
+      [ -S "/run/user/$NEWUID/systemd/private" ] && break
+      sleep 1
+    done
+  fi
+
   TMP_SUDO="/etc/sudoers.d/opencode-unlimited-install"
   printf '%s ALL=(ALL) NOPASSWD: ALL\n' "$NEWUSER" > "$TMP_SUDO"
   chmod 0440 "$TMP_SUDO"
@@ -248,8 +262,21 @@ fi
 command -v systemctl >/dev/null 2>&1 || die "systemd not found — linux+systemd only"
 command -v python3 >/dev/null 2>&1 || die "python3 required (needed by guard/doctor)"
 command -v curl    >/dev/null 2>&1 || die "curl required"
-systemd-run --user --scope true >/dev/null 2>&1 \
-  || die "user systemd is not running (are you inside a bare container?)"
+# The user manager can take a moment to appear after a fresh account is created.
+USERD=0
+for i in $(seq 1 15); do
+  systemd-run --user --scope true >/dev/null 2>&1 && { USERD=1; break; }
+  sleep 1
+done
+if [ "$USERD" = 0 ]; then
+  bad "your user systemd manager (user@$(id -u).service) is not reachable"
+  say "fix it, then run this again:"
+  say "  sudo loginctl enable-linger $USER"
+  say "  sudo systemctl start user@$(id -u).service"
+  say "  log out and back in        # a console/su login starts it for real"
+  say "if all three still fail, the VPS is a container (LXC) and cannot run TUN"
+  exit 1
+fi
 [ -e /dev/net/tun ] || die "/dev/net/tun missing — enable TUN in your VM first"
 
 # The lane cannot work without unprivileged user namespaces. Stop now instead

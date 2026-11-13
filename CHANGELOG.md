@@ -4,6 +4,18 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.11] — 2026-11-13
+
+### Fixed
+
+- A fresh root install could die with `user systemd is not running (are you
+  inside a bare container?)`. The second pass runs through `runuser -l`, which
+  does not create the user's `user@UID.service` the way a real login does, so
+  the very first `systemd-run --user` failed. The root branch now starts that
+  manager and waits for `/run/user/UID/systemd/private`; the check itself retries
+  for 15s and, if it still fails, prints the three commands that fix it instead of
+  blaming a container.
+
 ## [2.0.10] — 2026-11-13
 
 ### Fixed
@@ -217,6 +229,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.11]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.11
 [2.0.10]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.10
 [2.0.9]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.9
 [2.0.8]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.8
