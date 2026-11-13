@@ -24,7 +24,14 @@
 
 <h2 dir="rtl" align="right">نصب با یک دستور</h2>
 
-<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash</code></pre>
+<p dir="rtl" align="right">
+این مخزن <b>خصوصی</b> است. برای نصب باید یک <b>کد دسترسی</b> داشته باشی؛ کد را از
+<a href="https://github.com/asgtey">asgtey</a> بگیر — برای هر نفر یک کد جدا، و
+هر وقت بخواهد می‌تواند همان کد را باطل کند. جای <code>YOUR-CODE</code> کد خودت را
+بگذار:
+</p>
+
+<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE</code></pre>
 
 <p dir="rtl" align="right">
 بعد ترمینال را ببند و باز کن، و مثل همیشه بنویس <code>opencode</code>.
@@ -33,6 +40,7 @@
 <p dir="rtl" align="right">
 این دستور کل پروژه را در یک پوشهٔ موقت دانلود می‌کند، <code>install.sh</code> را اجرا
 می‌کند (رمز sudo را می‌پرسد) و بعد پوشه را پاک می‌کند. به <code>git</code> نیازی نیست.
+کد فقط برای <b>دانلود</b> لازم است؛ بعد از نصب دیگر پرسیده نمی‌شود.
 </p>
 
 <p dir="rtl" align="right"><b>پیش‌نیازها:</b></p>
@@ -43,14 +51,20 @@
   <li>شبکه‌ای که Cloudflare WARP در آن وصل شود</li>
 </ul>
 
+<p dir="rtl" align="right">
+اگر کد اشتباه یا منقضی باشد، همان اول با پیام
+<code>the code was rejected or has expired</code> متوقف می‌شود و چیزی دانلود نمی‌شود.
+جزئیات کدها و باطل کردنشان: <a href="docs/ACCESS.md">docs/ACCESS.md</a>
+</p>
+
 <h3 dir="rtl" align="right">با root اجرا کنی، خودش کاربر می‌سازد</h3>
 
 <p dir="rtl" align="right">
 همه‌چیز داخل پوشهٔ کاربر نصب می‌شود و guard یک سرویس <b>کاربر</b> است، پس داخل
-<code>/root</code> کار نمی‌کند. اگر با root اجرا کنی، نصب‌کننده فقط یک چیز
-می‌پرسد — نام کاربر — بعد آن حساب را می‌سازد، رمزی برایش تعیین می‌کند و در پایان
-چاپ می‌کند، به گروه <code>sudo</code> اضافه‌اش می‌کند و نصب را با همان کاربر
-ادامه می‌دهد. کار دیگری لازم نیست.
+<code>/root</code> کار نمی‌کند. اگر با root اجرا کنی، نصب‌کننده دو چیز می‌پرسد —
+نام کاربر و رمز عبور (دو بار، و چیزی روی صفحه نشان داده نمی‌شود) — بعد آن حساب را
+می‌سازد، به گروه <code>sudo</code> اضافه‌اش می‌کند و نصب را با همان کاربر ادامه
+می‌دهد. همان رمزی که خودت نوشتی رمز ورودت است؛ رمز تصادفی چاپ نمی‌شود.
 </p>
 
 <p dir="rtl" align="right">
@@ -153,7 +167,7 @@ pair از قبل آماده است. فقط این را بزن:
 
 <h2 dir="rtl" align="right">حذف</h2>
 
-<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash -s -- --uninstall</code></pre>
+<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE --uninstall</code></pre>
 
 <p dir="rtl" align="right">
 نشست‌ها، ورودها و بکاپ‌هایت دست‌نخورده می‌مانند.

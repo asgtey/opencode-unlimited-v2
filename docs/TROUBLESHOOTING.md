@@ -8,9 +8,9 @@ Run `opencode-unlimited-doctor` first. Every red line has a fix printed next to 
 
 ### `run me as your normal user, not root` (older versions)
 
-Current installers do not stop: they ask for a username, create the account, and
-continue as that user. If you see this message you are on an older copy — update,
-or create the user yourself:
+Current installers do not stop: they ask for a username and a password, create the
+account, and continue as that user. If you see this message you are on an older
+copy — update, or create the user yourself:
 
 ```bash
 adduser asghar
@@ -18,20 +18,36 @@ usermod -aG wheel asghar     # Debian/Ubuntu/Mint: -aG sudo
 su - asghar
 ```
 
+### `the code was rejected or has expired`
+
+The bundle is private, so the install command needs your access code:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
+```
+
+Common causes: a typo or a line-wrap when copying the code; an expired code; a
+code you deleted; a code that does not have **Contents: Read** on
+`asgtey/opencode-unlimited-v2`. Ask asgtey for a new one — the old code keeps
+working until it is deleted. How codes work: [ACCESS.md](ACCESS.md).
+
 ### The one-command install stops immediately
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash
+curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
 ```
 
 `get.sh` downloads the bundle to a temp folder. If you see
-`could not download the bundle`, either the network is blocked or `curl`/`wget`
-is missing. The manual route always works:
+`could not download the bundle` **and** your code is new, the network is blocked or
+`curl`/`wget` is missing. The manual route always works:
 
 ```bash
 git clone https://github.com/asgtey/opencode-unlimited-v2.git
 cd opencode-unlimited-v2 && ./install.sh
 ```
+
+`git clone` asks for a username and password: the password is your access code, the
+username can be anything (for example `x-access-token`).
 
 If sudo never asks for a password, you are not on a terminal (for example inside a
 CI job). Run the `git clone` route instead.

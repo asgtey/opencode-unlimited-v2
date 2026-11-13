@@ -12,8 +12,11 @@ wall hits, your IPv6 identity is rotated automatically and you keep working.
 
 ## Install (one command)
 
+This repository is **private**. You need an access code from [@asgtey](https://github.com/asgtey)
+— one per person, revocable. Paste it in place of `YOUR-CODE`:
+
 ```bash
-curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash
+curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE
 ```
 
 Then close and reopen your terminal, and run `opencode` like always.
@@ -31,9 +34,10 @@ the install command again.
 ### Running as root? It creates the user for you
 
 Everything is installed per user (`~`), and the guard is a **user** systemd service,
-so it cannot live in `/root`. If you run the installer as root, it asks for one
-thing — a username — then creates that account (with a password it prints at the
-end), adds it to `sudo`, and continues as that user. Nothing else to do.
+so it cannot live in `/root`. If you run the installer as root, it asks for two
+things — a username and a password (typed twice, not shown) — then creates that
+account, adds it to `sudo`, and continues as that user. Nothing else to do. The
+password you chose is the one you log in with; no random one is printed.
 
 Do not wrap the command in `sudo` as a normal user; the installer asks for sudo only
 when it needs it.
@@ -110,13 +114,14 @@ The WARP trick itself, the `/64` rotation and the kill-switch are unchanged.
 ## Uninstall
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash -s -- --uninstall
+curl -fsSL https://raw.githubusercontent.com/asgtey/ou-start/main/get.sh | bash -s -- --token YOUR-CODE --uninstall
 ```
 
 Your sessions, auth and backups are untouched.
 
 ## Docs
 
+- [docs/ACCESS.md](docs/ACCESS.md) — who can install, and how to revoke a code
 - [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — every error and its fix
 - [docs/PAIRING.md](docs/PAIRING.md) — connect from another device with `opencode pair`
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the namespace, DB check and firewall work

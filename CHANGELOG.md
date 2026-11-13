@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.5] — 2026-11-13
+
+Access is now controlled: the repo is private and installs need a personal code.
+The root install also asks for the password instead of generating one.
+
+### Added
+
+- **Access codes.** The bundle lives in a private repository and is fetched through
+  the public launcher `asgtey/ou-start`. Each person gets their own fine-grained
+  token (Contents: read-only, one repo, expiring); deleting it cuts that person off
+  without touching anyone else. See `docs/ACCESS.md`.
+- `get.sh` accepts `--token` / `--code` / `OUC_TOKEN`, sends it to the GitHub API
+  tarball endpoint, and explains a 404 as "code rejected or expired" instead of a
+  generic download failure.
+- `OUC_PASSWORD` for unattended root installs (cloud-init, CI, no tty).
+
+### Changed
+
+- `install.sh` as root now asks for the **password too** (typed twice, hidden,
+  minimum 6 characters, `:` rejected) and sets exactly that password. A generated
+  password is only used when there is no terminal, and it is printed in that case.
+- Install and uninstall commands point at `asgtey/ou-start`.
+
 ## [2.0.4] — 2026-11-13
 
 Installing as root now creates the account for you, and pairing works without any
@@ -136,6 +159,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.5]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.5
 [2.0.4]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.4
 [2.0.3]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.3
 [2.0.2]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.2

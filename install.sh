@@ -57,15 +57,33 @@ echo ""
 # would put files in /root, bind the user service to the wrong systemd manager
 # and leave the sudoers rules pointing at a user that never logs in.
 #
-# So when root runs it, we create (or reuse) a normal account, ask only for the
-# name, and re-run this same script as that account. A temporary NOPASSWD entry
-# covers the sudo calls of the second pass and is deleted before we exit.
+# So when root runs it, we create (or reuse) a normal account, ask for the name
+# and the password, and re-run this same script as that account. A temporary
+# NOPASSWD entry covers the sudo calls of the second pass and is deleted before
+# we exit.
 if [ "$(id -u)" = 0 ]; then
   SELF="$SRC/install.sh"
   # `[ -r /dev/tty ]` lies when there is no controlling terminal; opening it is
   # the only reliable test.
   HAVE_TTY=0
   if { : < /dev/tty; } 2>/dev/null; then HAVE_TTY=1; fi
+
+  # Read a line without echoing it (passwords). Falls back to plain read when
+  # there is no tty at all — the caller decides what that means.
+  read_secret() {
+    printf "%s" "$1"
+    SECRET=""
+    if [ "$HAVE_TTY" = 1 ]; then
+      STTY_SAVE="$(stty -g < /dev/tty 2>/dev/null || true)"
+      stty -echo < /dev/tty 2>/dev/null || true
+      read -r SECRET < /dev/tty 2>/dev/null || SECRET=""
+      [ -n "$STTY_SAVE" ] && stty "$STTY_SAVE" < /dev/tty 2>/dev/null || true
+      printf "\n"
+    else
+      read -r SECRET 2>/dev/null || SECRET=""
+    fi
+  }
+
   echo ""
   say "you are root. this project installs per user, so I will create a normal"
   say "account and continue as that account."
@@ -89,10 +107,55 @@ if [ "$(id -u)" = 0 ]; then
   [ "$NEWUSER" = root ] && die "pick a name other than root"
 
   NEWPW=""
+  PW_SOURCE=""
   if id "$NEWUSER" >/dev/null 2>&1; then
     say "user '$NEWUSER' already exists — continuing as that user"
     say "  (its password is unchanged)"
+    PW_SOURCE=existing
   else
+    # The password is asked twice and never echoed. Unattended root installs
+    # (cloud-init, docker, no tty) can pass OUC_PASSWORD instead.
+    if [ -n "${OUC_PASSWORD:-}" ]; then
+      NEWPW="$OUC_PASSWORD"
+      case "$NEWPW" in
+        *:*) die "OUC_PASSWORD cannot contain ':'" ;;
+      esac
+      PW_SOURCE=env
+    elif [ "$HAVE_TTY" = 1 ]; then
+      PW_TRIES=0
+      while [ "$PW_TRIES" -lt 3 ]; do
+        PW_TRIES=$((PW_TRIES + 1))
+        read_secret "  password for '$NEWUSER': "
+        NEWPW="$SECRET"
+        if [ -z "$NEWPW" ]; then
+          say "! empty password — try again"
+          continue
+        fi
+        case "$NEWPW" in
+          *:*) say "! a password cannot contain ':' — try again"; NEWPW=""; continue ;;
+        esac
+        if [ ${#NEWPW} -lt 6 ]; then
+          say "! use at least 6 characters — try again"
+          NEWPW=""
+          continue
+        fi
+        read_secret "  repeat the password: "
+        if [ "$NEWPW" != "$SECRET" ]; then
+          say "! the two passwords do not match — try again"
+          NEWPW=""
+          continue
+        fi
+        break
+      done
+      [ -n "$NEWPW" ] || die "no usable password after 3 tries — nothing was created"
+      PW_SOURCE=typed
+    else
+      NEWPW="$(tr -dc 'A-Za-z0-9' < /dev/urandom 2>/dev/null | head -c 12)"
+      [ -n "$NEWPW" ] || NEWPW="opencode$(date +%s | tail -c 5)"
+      PW_SOURCE=generated
+      say "no terminal to ask on — generated a password for '$NEWUSER'"
+    fi
+
     CREATED=0
     if command -v adduser >/dev/null 2>&1 \
        && adduser --disabled-password --gecos "" "$NEWUSER" >/dev/null 2>&1; then
@@ -103,10 +166,8 @@ if [ "$(id -u)" = 0 ]; then
     fi
     [ "$CREATED" = 1 ] || die "could not create user '$NEWUSER'"
 
-    NEWPW="$(tr -dc 'A-Za-z0-9' < /dev/urandom 2>/dev/null | head -c 12)"
-    [ -n "$NEWPW" ] || NEWPW="opencode$(date +%s | tail -c 5)"
     printf '%s:%s\n' "$NEWUSER" "$NEWPW" | chpasswd 2>/dev/null \
-      || say "! could not set a password — set one later with: passwd $NEWUSER"
+      || say "! could not set the password — set one later with: passwd $NEWUSER"
 
     SUDO_GROUP=""
     if getent group sudo >/dev/null 2>&1 || grep -q '^sudo:' /etc/group 2>/dev/null; then
@@ -161,7 +222,12 @@ if [ "$(id -u)" = 0 ]; then
   if [ "$RC" = 0 ]; then
     ok "installed for user '$NEWUSER'"
     say "  username : $NEWUSER"
-    [ -n "$NEWPW" ] && say "  password : $NEWPW   (change it later: passwd)"
+    case "$PW_SOURCE" in
+      generated) say "  password : $NEWPW   (generated — change it later: passwd)" ;;
+      env)       say "  password : the one from OUC_PASSWORD" ;;
+      existing)  : ;;
+      *)         say "  password : the one you typed   (change it later: passwd)" ;;
+    esac
     say "  log in as that user, then run:  opencode"
     say "  from another device:            opencode pair"
   else
