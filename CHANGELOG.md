@@ -4,6 +4,16 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.12] — 2026-11-13
+
+### Fixed
+
+- `systemd-run --user` failed with `Failed to connect to bus: No medium found`
+  for the second pass of a root install. The manager was running, but
+  `runuser -l` / `su -` do not always set `XDG_RUNTIME_DIR`. The installer now
+  derives it from the uid (and `DBUS_SESSION_BUS_ADDRESS` when the bus socket
+  exists), and the root branch passes it into the second pass explicitly.
+
 ## [2.0.11] — 2026-11-13
 
 ### Fixed
@@ -229,6 +239,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.12]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.12
 [2.0.11]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.11
 [2.0.10]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.10
 [2.0.9]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.9

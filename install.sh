@@ -219,6 +219,10 @@ if [ "$(id -u)" = 0 ]; then
     [ -n "$_val" ] && FORWARD="$FORWARD $_v=$(printf '%q' "$_val")"
   done
   unset _v _val
+  # A login shell from runuser/su does not always get XDG_RUNTIME_DIR, and then
+  # every `systemd --user` call fails with "No medium found" even though the
+  # manager is up. Pass it explicitly when we know the uid.
+  [ -n "${NEWUID:-}" ] && FORWARD="$FORWARD XDG_RUNTIME_DIR=/run/user/$NEWUID"
   RUN="bash '$SELF'"
   [ -n "$FORWARD" ] && RUN="$FORWARD $RUN"
 
@@ -262,6 +266,18 @@ fi
 command -v systemctl >/dev/null 2>&1 || die "systemd not found — linux+systemd only"
 command -v python3 >/dev/null 2>&1 || die "python3 required (needed by guard/doctor)"
 command -v curl    >/dev/null 2>&1 || die "curl required"
+
+# `su - user` and `runuser -l` do not always hand over XDG_RUNTIME_DIR. Without
+# it every `systemd --user` call dies with "Failed to connect to bus: No medium
+# found" even though the manager is running, so set it from the uid.
+if [ -z "${XDG_RUNTIME_DIR:-}" ] && [ -d "/run/user/$(id -u)" ]; then
+  XDG_RUNTIME_DIR="/run/user/$(id -u)"; export XDG_RUNTIME_DIR
+fi
+if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] && [ -S "${XDG_RUNTIME_DIR:-/nonexistent}/bus" ]; then
+  DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
+  export DBUS_SESSION_BUS_ADDRESS
+fi
+
 # The user manager can take a moment to appear after a fresh account is created.
 USERD=0
 for i in $(seq 1 15); do
@@ -270,11 +286,12 @@ for i in $(seq 1 15); do
 done
 if [ "$USERD" = 0 ]; then
   bad "your user systemd manager (user@$(id -u).service) is not reachable"
-  say "fix it, then run this again:"
+  say "try this in the same shell, then run the installer again:"
+  say "  export XDG_RUNTIME_DIR=/run/user/$(id -u)"
   say "  sudo loginctl enable-linger $USER"
   say "  sudo systemctl start user@$(id -u).service"
-  say "  log out and back in        # a console/su login starts it for real"
-  say "if all three still fail, the VPS is a container (LXC) and cannot run TUN"
+  say "if it still fails, log out and back in (a real login sets it up),"
+  say "and only if that fails too the VPS is a container (LXC) without TUN"
   exit 1
 fi
 [ -e /dev/net/tun ] || die "/dev/net/tun missing — enable TUN in your VM first"
