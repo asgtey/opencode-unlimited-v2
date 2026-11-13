@@ -1,0 +1,25 @@
+# OS noise
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# editors
+*.swp
+*.swo
+*~
+.idea/
+.vscode/
+
+# logs and local state
+*.log
+*.pid
+*.tmp
+*.bak
+
+# python
+__pycache__/
+*.pyc
+
+# local test artifacts
+/tmp/
+/out/

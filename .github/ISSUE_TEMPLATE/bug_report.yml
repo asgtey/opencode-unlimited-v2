@@ -1,0 +1,80 @@
+name: Bug report
+description: Something in the installer, lane, guard, hop or doctor is broken
+title: "[bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing, run `opencode-unlimited-doctor` and read
+        [Troubleshooting](https://github.com/asgtey/opencode-unlimited-v2/blob/main/docs/TROUBLESHOOTING.md).
+
+        **Never paste auth tokens.** Redact IP addresses if you care about them.
+  - type: input
+    id: opencode
+    attributes:
+      label: OpenCode version
+      description: Output of `opencode --version`
+      placeholder: "2.2.7"
+    validations:
+      required: true
+  - type: input
+    id: distro
+    attributes:
+      label: Distribution and kernel
+      description: Output of `cat /etc/os-release | head -2` and `uname -r`
+      placeholder: "Linux Mint 22.3 / Ubuntu 24.04, 6.8.0"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - install.sh
+        - uninstall.sh
+        - zen-lane
+        - zen-guard
+        - zen-hop
+        - doctor
+        - kill-switch / keeper
+        - WARP / IPv6
+        - documentation
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: What happened?
+      description: Exact commands, exact output.
+    validations:
+      required: true
+  - type: textarea
+    id: doctor
+    attributes:
+      label: doctor output
+      description: Paste `opencode-unlimited-doctor`
+      render: text
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: |
+        `tail -n 50 ~/.local/share/opencode-unlimited/guard/guard.log`
+        and `journalctl --user -u opencode-unlimited-guard -n 50 --no-pager`
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Checklist
+      options:
+        - label: I did not paste tokens or secrets.
+          required: true
+        - label: I read docs/TROUBLESHOOTING.md.
+          required: true

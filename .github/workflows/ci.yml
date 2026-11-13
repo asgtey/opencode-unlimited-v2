@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  syntax:
+    name: Bash syntax
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: bash -n on every script
+        run: |
+          set -euo pipefail
+          for f in install.sh uninstall.sh scripts/*.sh; do
+            echo "::group::$f"
+            bash -n "$f"
+            echo "::endgroup::"
+          done
+          echo "all scripts parse"
+
+      - name: ShellCheck (advisory)
+        continue-on-error: true
+        uses: ludeeus/action-shellcheck@2.0.0
+        with:
+          severity: warning
+
+  docs:
+    name: Docs and license
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Required files
+        run: |
+          set -euo pipefail
+          test -f README.md
+          test -f README.fa.md
+          test -f LICENSE
+          test -f SECURITY.md
+          test -f docs/ARCHITECTURE.md
+          test -f docs/TROUBLESHOOTING.md
+          test -f docs/V1-V2.md
+          echo "docs present"

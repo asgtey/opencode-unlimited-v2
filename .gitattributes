@@ -1,0 +1,11 @@
+# Normalise line endings: the repo stores LF, checkouts get LF even on Windows.
+* text=auto eol=lf
+
+*.sh   text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+Makefile text eol=lf
+
+# Keep the shebang scripts executable in the index (see update-index).
+*.sh   linguist-language=Shell
