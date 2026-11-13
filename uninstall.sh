@@ -74,7 +74,8 @@ fi
 sudo rm -f "/etc/sudoers.d/$BRAND" && ok "sudoers entry removed"
 
 # ---------------------------------------------------------------- V2 service
-# install.sh disabled the shared background server. Put it back to default.
+# V2's shared background server is what `opencode pair` talks to. Put it back to
+# the default (enabled) so pairing keeps working after the uninstall.
 REAL=""
 for c in "$HOME/.opencode/bin/opencode" /usr/local/bin/opencode /usr/bin/opencode; do
   [ -x "$c" ] || continue

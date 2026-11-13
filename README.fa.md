@@ -43,33 +43,19 @@
   <li>شبکه‌ای که Cloudflare WARP در آن وصل شود</li>
 </ul>
 
-<h3 dir="rtl" align="right">با root اجرا نکن</h3>
+<h3 dir="rtl" align="right">با root اجرا کنی، خودش کاربر می‌سازد</h3>
 
 <p dir="rtl" align="right">
-<code>install.sh</code> اگر با root اجرا شود با پیام
-<code>run me as your normal user, not root</code> متوقف می‌شود. این عمدی است:
-همه‌چیز داخل پوشهٔ کاربر نصب می‌شود، guard یک سرویس <b>کاربر</b> است و قواعد
-sudoers به همان حساب گره خورده‌اند. با root همه‌چیز داخل <code>/root</code>
-نصب می‌شود و به درد نمی‌خورد.
+همه‌چیز داخل پوشهٔ کاربر نصب می‌شود و guard یک سرویس <b>کاربر</b> است، پس داخل
+<code>/root</code> کار نمی‌کند. اگر با root اجرا کنی، نصب‌کننده فقط یک چیز
+می‌پرسد — نام کاربر — بعد آن حساب را می‌سازد، رمزی برایش تعیین می‌کند و در پایان
+چاپ می‌کند، به گروه <code>sudo</code> اضافه‌اش می‌کند و نصب را با همان کاربر
+ادامه می‌دهد. کار دیگری لازم نیست.
 </p>
 
 <p dir="rtl" align="right">
-فقط سه مرحله به root نیاز دارد و خود نصب‌کننده با <code>sudo</code> می‌پرسد. پس
-<code>sudo bash get.sh</code> یا <code>sudo ./install.sh</code> اجرا نکن.
-</p>
-
-<p dir="rtl" align="right">
-اگر با root وارد شده‌ای (روی VPS تازه یا داخل کانتینر رایج است)، اول یک کاربر
-عادی بساز:
-</p>
-
-<pre dir="ltr" align="left"><code>adduser asghar
-usermod -aG sudo asghar
-su - asghar</code></pre>
-
-<p dir="rtl" align="right">
-روی Fedora یا Arch خط دوم می‌شود <code>usermod -aG wheel asghar</code>.
-بعد دوباره دستور نصب را اجرا کن، این بار بدون <code>sudo</code>.
+اگر کاربر عادی هستی، دستور را با <code>sudo</code> اجرا نکن؛ خودش هرجا لازم شد
+رمز می‌پرسد.
 </p>
 
 <h2 dir="rtl" align="right">وقتی محدودیت خورد</h2>
@@ -117,8 +103,8 @@ OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخه�
 <ol dir="rtl">
   <li>
     <b>درخواست‌ها به یک سرور پس‌زمینه منتقل شدند.</b> TUI فقط کلاینت است. پس این
-    پروژه یک سرور خصوصی می‌سازد (<code>--standalone</code>) و سرور مشترک را خاموش
-    می‌کند.
+    پروژه در هر اجرا یک سرور خصوصی می‌سازد (<code>--standalone</code>) و همان
+    سرور خصوصی است که edge پین‌شده را می‌گیرد.
   </li>
   <li>
     <b>خطای محدودیت به دیتابیس رفت.</b> V2 آن را در
@@ -143,21 +129,14 @@ OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخه�
 <h2 dir="rtl" align="right">اتصال از گوشی یا کامپیوتر دیگر (pair)</h2>
 
 <p dir="rtl" align="right">
-pair به سرور مشترک نیاز دارد و این پروژه آن را خاموش می‌کند. سه قدم:
+pair از قبل آماده است. فقط این را بزن:
 </p>
-
-<p dir="rtl" align="right"><b>۱.</b> روشنش کن:</p>
-
-<pre dir="ltr" align="left"><code>opencode service unset disabled
-opencode service start</code></pre>
-
-<p dir="rtl" align="right"><b>۲.</b> لینک بگیر و روی دستگاه دیگر باز کن (یا QR را با اپ OpenCode اسکن کن):</p>
 
 <pre dir="ltr" align="left"><code>opencode pair</code></pre>
 
-<p dir="rtl" align="right"><b>۳.</b> دوباره خاموشش کن — این قدم را جا نینداز:</p>
-
-<pre dir="ltr" align="left"><code>opencode service set disabled true</code></pre>
+<p dir="rtl" align="right">
+لینک یا QR را روی دستگاه دیگر باز کن. یک بار کار می‌کند و ۵ دقیقه اعتبار دارد.
+</p>
 
 <p dir="rtl" align="right">
 شبکهٔ دیگر؟ <code>opencode pair --remote</code> — از راه SSH؟ اول پورت را فوروارد کن:
@@ -167,7 +146,9 @@ opencode service start</code></pre>
 
 <p dir="rtl" align="right">
 در مدتی که pair هستی، ترافیک باز هم از WARP می‌رود و <code>/64</code> عوض می‌شود،
-فقط edge تصادفی نداری. جزئیات: <a href="docs/PAIRING.md">docs/PAIRING.md</a>
+فقط edge تصادفی نداری. اگر هیچ‌وقت pair نمی‌کنی، سرور مشترک را خاموش کن:
+<code>opencode service set disabled true</code> — ترمینال همان‌طور کار می‌کند.
+جزئیات: <a href="docs/PAIRING.md">docs/PAIRING.md</a>
 </p>
 
 <h2 dir="rtl" align="right">حذف</h2>

@@ -21,7 +21,8 @@ resolve `opencode.ai` with the host's `/etc/hosts`. `--standalone` makes the TUI
 spawn its own `serve --stdio --port 0` child, which inherits the lane's namespace.
 
 `opencode service set disabled true` makes private servers the default and stops
-the shared one, so even subcommands that do not receive the flag stay private.
+the shared one. The installer does not do that by default (pairing needs the shared
+server); the lane relies on `--standalone` instead, so the TUI is private either way.
 
 ## Namespace contents
 

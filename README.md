@@ -28,26 +28,15 @@ If unprivileged user namespaces are blocked (Ubuntu 24.04 and Mint 22.x do this 
 default), the installer stops and prints the one-line `sysctl` fix. Run it, then run
 the install command again.
 
-### Never run it as root
+### Running as root? It creates the user for you
 
-`install.sh` stops with `run me as your normal user, not root`, and that is
-deliberate: everything is installed per user (`~`), the guard is a **user**
-systemd service, and the sudoers rules are tied to your account. As root it would
-install into `/root` and grant nothing useful.
+Everything is installed per user (`~`), and the guard is a **user** systemd service,
+so it cannot live in `/root`. If you run the installer as root, it asks for one
+thing — a username — then creates that account (with a password it prints at the
+end), adds it to `sudo`, and continues as that user. Nothing else to do.
 
-Only three steps need root, and the installer asks for it through `sudo` itself.
-So do **not** use `sudo bash get.sh` or `sudo ./install.sh`.
-
-If you are logged in as root (common on a fresh VPS or container), create a normal
-user first:
-
-```bash
-adduser asghar                     # Debian, Ubuntu, Mint
-usermod -aG sudo asghar            # Fedora/Arch: usermod -aG wheel asghar
-su - asghar                        # log in as that user
-```
-
-Then run the install command again, without `sudo`.
+Do not wrap the command in `sudo` as a normal user; the installer asks for sudo only
+when it needs it.
 
 ## When the limit hits
 
@@ -81,13 +70,29 @@ Everything lives in `~/.local/share/opencode-unlimited/`. System touches are two
 systemd units, one sudoers file and one firewall chain — all removed by
 `uninstall.sh`.
 
+## Pair with your phone or another computer
+
+Pairing is already set up. Just run:
+
+```bash
+opencode pair
+```
+
+Open the printed link, or scan the QR. It works once and expires after 5 minutes.
+Different network? `opencode pair --remote`, or forward the port:
+`ssh -L 49374:127.0.0.1:49374 user@server` — see [docs/PAIRING.md](docs/PAIRING.md).
+
+Paired sessions still go through WARP and still get `/64` rotation, but not the
+random edge. If you never pair, turn the shared server off with
+`opencode service set disabled true`.
+
 ## Why this fork
 
 OpenCode 2 changed two things that break the V1 scripts:
 
-1. **Requests moved to a background server.** The TUI is only a client. So the
-   lane forces a private server (`--standalone`) and the installer disables the
-   shared one (`opencode service set disabled true`).
+1. **Requests moved to a background server.** The TUI is only a client. So the lane
+   forces a private server (`--standalone`) on every launch, and that private server
+   is what gets the pinned edge.
 2. **The limit error moved to SQLite.** V2 stores it in
    `~/.local/share/opencode/opencode.db`, not in the log. The guard reads that
    database (read-only) and keeps the log as a fallback.
@@ -101,28 +106,6 @@ The WARP trick itself, the `/64` rotation and the kill-switch are unchanged.
 - The lane refuses to start if the namespace or the `/etc/hosts` pin fails.
 - Rotation is refused if the kill-switch chain is missing.
 - Emergency exit and residual risks: [SECURITY.md](SECURITY.md).
-
-## Pair with your phone or another computer
-
-Pairing needs the shared server, which this project turns off. Three steps:
-
-```bash
-# 1. turn it on
-opencode service unset disabled
-opencode service start
-
-# 2. get a link (or QR) and open it on the other device
-opencode pair
-
-# 3. turn it off again — do not skip this
-opencode service set disabled true
-```
-
-Different network? Use `opencode pair --remote`. Over SSH? Forward the port first:
-`ssh -L 49374:127.0.0.1:49374 user@server`.
-
-A paired session still goes through WARP and still gets `/64` rotation, but not the
-random edge. Details: [docs/PAIRING.md](docs/PAIRING.md).
 
 ## Uninstall
 

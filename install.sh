@@ -56,14 +56,102 @@ echo ""
 # Everything this project installs is per-user. Running the installer as root
 # would put files in /root, bind the user service to the wrong systemd manager
 # and leave the sudoers rules pointing at a user that never logs in.
+#
+# So when root runs it, we create (or reuse) a normal account, ask only for the
+# name, and re-run this same script as that account. A temporary NOPASSWD entry
+# covers the sudo calls of the second pass and is deleted before we exit.
 if [ "$(id -u)" = 0 ]; then
-  bad "run me as your normal user, not root"
-  say "if you only have root (fresh VPS, container), create a normal user first:"
-  say "  adduser asghar                     # Debian/Ubuntu/Mint"
-  say "  usermod -aG sudo asghar            # or: usermod -aG wheel asghar (Fedora/Arch)"
-  say "  su - asghar                        # log in as that user"
-  say "then run the install command again, without sudo."
-  exit 1
+  SELF="$SRC/install.sh"
+  echo ""
+  say "you are root. this project installs per user, so I will create a normal"
+  say "account and continue as that account."
+  echo ""
+
+  printf "  username for the new account [opencode]: "
+  NEWUSER=""
+  if [ -r /dev/tty ]; then read -r NEWUSER < /dev/tty || true; fi
+  NEWUSER="${NEWUSER:-opencode}"
+  case "$NEWUSER" in
+    ''|*[!a-z0-9_-]*) die "invalid username '$NEWUSER' — lowercase letters, digits, - and _ only" ;;
+  esac
+  case "$NEWUSER" in
+    [0-9]*) die "username cannot start with a digit" ;;
+  esac
+  [ ${#NEWUSER} -le 32 ] || die "username too long (max 32)"
+  [ "$NEWUSER" = root ] && die "pick a name other than root"
+
+  NEWPW=""
+  if id "$NEWUSER" >/dev/null 2>&1; then
+    say "user '$NEWUSER' already exists — continuing as that user"
+    say "  (its password is unchanged)"
+  else
+    CREATED=0
+    if command -v adduser >/dev/null 2>&1 \
+       && adduser --disabled-password --gecos "" "$NEWUSER" >/dev/null 2>&1; then
+      CREATED=1
+    elif command -v useradd >/dev/null 2>&1 \
+       && useradd -m -s /bin/bash "$NEWUSER" >/dev/null 2>&1; then
+      CREATED=1
+    fi
+    [ "$CREATED" = 1 ] || die "could not create user '$NEWUSER'"
+
+    NEWPW="$(tr -dc 'A-Za-z0-9' < /dev/urandom 2>/dev/null | head -c 12)"
+    [ -n "$NEWPW" ] || NEWPW="opencode$(date +%s | tail -c 5)"
+    printf '%s:%s\n' "$NEWUSER" "$NEWPW" | chpasswd 2>/dev/null \
+      || say "! could not set a password — set one later with: passwd $NEWUSER"
+
+    SUDO_GROUP=""
+    if getent group sudo >/dev/null 2>&1 || grep -q '^sudo:' /etc/group 2>/dev/null; then
+      SUDO_GROUP=sudo
+    elif getent group wheel >/dev/null 2>&1 || grep -q '^wheel:' /etc/group 2>/dev/null; then
+      SUDO_GROUP=wheel
+    fi
+    if [ -n "$SUDO_GROUP" ]; then
+      usermod -aG "$SUDO_GROUP" "$NEWUSER" || say "! could not add '$NEWUSER' to $SUDO_GROUP"
+    fi
+    ok "user '$NEWUSER' created${SUDO_GROUP:+ (group: $SUDO_GROUP)}"
+  fi
+
+  # The bundle lives in a root-only temp dir; the second pass reads it as $NEWUSER.
+  chmod -R a+rX "$(dirname "$SRC")" 2>/dev/null
+  loginctl enable-linger "$NEWUSER" >/dev/null 2>&1 \
+    || say "! could not enable lingering for '$NEWUSER' (the guard needs it after reboot)"
+
+  TMP_SUDO="/etc/sudoers.d/opencode-unlimited-install"
+  printf '%s ALL=(ALL) NOPASSWD: ALL\n' "$NEWUSER" > "$TMP_SUDO"
+  chmod 0440 "$TMP_SUDO"
+  if ! visudo -cf "$TMP_SUDO" >/dev/null 2>&1; then
+    rm -f "$TMP_SUDO"
+    die "temporary sudoers file failed validation — aborting"
+  fi
+  cleanup_sudo() { rm -f "$TMP_SUDO"; }
+  trap cleanup_sudo EXIT INT TERM
+
+  echo ""
+  say "starting the installer again as '$NEWUSER'…"
+  echo ""
+  if command -v runuser >/dev/null 2>&1; then
+    runuser -l "$NEWUSER" -c "bash '$SELF'" < /dev/tty
+  else
+    su - "$NEWUSER" -c "bash '$SELF'" < /dev/tty
+  fi
+  RC=$?
+
+  cleanup_sudo
+  trap - EXIT INT TERM
+  chown -R "$NEWUSER": "/home/$NEWUSER" 2>/dev/null
+
+  echo ""
+  if [ "$RC" = 0 ]; then
+    ok "installed for user '$NEWUSER'"
+    say "  username : $NEWUSER"
+    [ -n "$NEWPW" ] && say "  password : $NEWPW   (change it later: passwd)"
+    say "  log in as that user, then run:  opencode"
+    say "  from another device:            opencode pair"
+  else
+    bad "install failed (exit $RC) — the messages above say why"
+  fi
+  exit "$RC"
 fi
 command -v systemctl >/dev/null 2>&1 || die "systemd not found — linux+systemd only"
 command -v python3 >/dev/null 2>&1 || die "python3 required (needed by guard/doctor)"
@@ -259,14 +347,27 @@ PY
   ok "OpenCode V2 installed: $("$OC_REAL" --version 2>/dev/null | tr -d '\r')"
 fi
 
-# V2 runs a shared background server by default. Provider requests would then
-# be made OUTSIDE the lane namespace, so the /etc/hosts pin would not apply.
-# Disabling the service forces a private server per launch (child of the TUI).
-if "$OC_REAL" service set disabled true >/dev/null 2>&1; then
-  ok "V2 background service disabled (private server per launch)"
+# V2 runs a shared background server. Pairing (`opencode pair`) needs it, and
+# the terminal does not: zen-lane always adds --standalone, so the TUI gets its
+# own private server inside the lane either way.
+#
+# Default: leave the shared server available, so `opencode pair` works with no
+# extra steps. Strict mode (OUC_PAIR=0) disables it and forces private servers.
+PAIR_MODE="${OUC_PAIR:-1}"
+if [ "$PAIR_MODE" = 0 ]; then
+  if "$OC_REAL" service set disabled true >/dev/null 2>&1; then
+    ok "V2 background service disabled (private server per launch)"
+  else
+    say "! could not disable the V2 background service automatically"
+    say "  run once:  $OC_REAL service set disabled true"
+  fi
 else
-  say "! could not disable the V2 background service automatically"
-  say "  run once:  $OC_REAL service set disabled true"
+  "$OC_REAL" service unset disabled >/dev/null 2>&1
+  if "$OC_REAL" service start >/dev/null 2>&1; then
+    ok "pairing ready — shared service running ('opencode pair' works as-is)"
+  else
+    say "! shared service did not start; try:  $OC_REAL service start"
+  fi
 fi
 
 # ---------------------------------------------------------------- scripts
@@ -570,6 +671,11 @@ ok "DONE. close & reopen your terminal, then run:  opencode"
 say "first launch: sign in once to the free tier if asked."
 say "wall hit? zen-guard rotates automatically — wait ~15s, re-send."
 say "checks:  ${BRAND}-doctor      manual new identity:  ${BRAND}-hop"
+if [ "$PAIR_MODE" = 0 ]; then
+  say "pairing is off (strict mode). enable it:  $OC_REAL service unset disabled && $OC_REAL service start"
+else
+  say "from another device:  opencode pair"
+fi
 if [ -d "$BACKUP_ROOT" ]; then
   say "V1 backup (one-way V2 migration): $BACKUP_ROOT"
 fi

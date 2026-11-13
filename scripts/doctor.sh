@@ -108,14 +108,14 @@ def find(o):
 sys.exit(0 if find(d) else 1)
 PY
   then
-    ok "V2 background service disabled (private server per launch)"
+    ok "private servers only (pairing off)"
+    echo "     pairing:  $REAL service unset disabled && $REAL service start"
   else
-    bad "V2 background service is NOT disabled — the lane's /etc/hosts pin may be bypassed"
-    echo "     fix:  $REAL service set disabled true"
-    echo "     (it stays enabled only while you pair from another device)"
+    ok "pairing ready (shared service on; terminal still uses --standalone)"
+    echo "     strict:   $REAL service set disabled true"
   fi
 else
-  warn "service.json not found — check: $REAL service set disabled true"
+  warn "service.json not found — check: $REAL service status"
 fi
 
 # ------------------------------------------------------------ paths (V2)

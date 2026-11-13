@@ -6,10 +6,11 @@ Run `opencode-unlimited-doctor` first. Every red line has a fix printed next to 
 
 ## Install-time
 
-### `run me as your normal user, not root`
+### `run me as your normal user, not root` (older versions)
 
-Expected. The project installs per user and the guard is a user service. Create a
-normal user and re-run without `sudo`:
+Current installers do not stop: they ask for a username, create the account, and
+continue as that user. If you see this message you are on an older copy — update,
+or create the user yourself:
 
 ```bash
 adduser asghar
@@ -110,10 +111,13 @@ command -v opencode
 If `~/.opencode/bin` still wins, the V2 installer's PATH line is later in your rc.
 The installer appends its block at the end of `~/.bashrc`; reopen the terminal.
 
-### `doctor` says the background service is not disabled
+### `doctor` says "private servers only"
+
+That is the strict mode (`OUC_PAIR=0`). Pairing is off. To turn it back on:
 
 ```bash
-opencode service set disabled true
+opencode service unset disabled
+opencode service start
 cat "$(opencode debug paths config)/service.json"
 ```
 
@@ -182,18 +186,22 @@ Check the error text:
 
 ### Pairing does not work
 
-Expected: V2 pairing needs the shared background service, and this project
-disables it. Re-enable it only while you pair, then turn it back off:
+`opencode pair` needs the shared server. The installer leaves it running, so first
+check that it is up:
 
 ```bash
-opencode service unset disabled
+opencode service status
 opencode service start
 opencode pair
-# ... connect from the other device ...
-opencode service set disabled true
 ```
 
-Full walkthrough (LAN, SSH tunnel, remote): [PAIRING.md](PAIRING.md).
+If you installed with `OUC_PAIR=0`, enable it first:
+
+```bash
+opencode service unset disabled && opencode service start
+```
+
+Full walkthrough (LAN, SSH tunnel, `--remote`): [PAIRING.md](PAIRING.md).
 
 ---
 

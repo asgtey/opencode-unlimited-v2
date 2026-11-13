@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.4] — 2026-11-13
+
+Installing as root now creates the account for you, and pairing works without any
+setup.
+
+### Added
+
+- `install.sh` run as root asks only for a **username**, creates that account (with
+  a generated password printed at the end), adds it to `sudo`/`wheel`, enables
+  lingering, and re-runs the installer as that user through `runuser`. A temporary
+  `NOPASSWD` sudoers entry covers the second pass and is deleted before exit.
+- `OUC_PAIR=0` installs in the old private-only mode.
+
+### Changed
+
+- The shared background server now stays enabled by default, so `opencode pair`
+  works immediately. The terminal is unaffected: the lane always passes
+  `--standalone`, so the TUI still gets a private server with the pinned edge.
+- `doctor.sh` reports "pairing ready" instead of flagging the shared service as a
+  problem, and prints the command for the other mode.
+- `docs/PAIRING.md` is now one command plus the network edge cases.
+- `get.sh` allows a root install (only a root uninstall is still refused).
+
 ## [2.0.3] — 2026-11-13
 
 ### Changed
@@ -113,6 +136,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.4]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.4
 [2.0.3]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.3
 [2.0.2]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.2
 [2.0.1]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.1
