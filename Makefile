@@ -2,7 +2,7 @@ SHELL := /bin/bash
 
 SCRIPTS := install.sh uninstall.sh \
            scripts/warp-keeper.sh scripts/zen-lane.sh scripts/zen-guard.sh \
-           scripts/zen-hop.sh scripts/doctor.sh
+           scripts/zen-hop.sh scripts/doctor.sh scripts/desktop-patch.sh
 
 .PHONY: check install uninstall doctor hop
 

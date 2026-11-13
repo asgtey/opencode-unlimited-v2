@@ -559,6 +559,7 @@ ok "DONE. close & reopen your terminal, then run:  opencode"
 say "first launch: sign in once to the free tier if asked."
 say "wall hit? zen-guard rotates automatically — wait ~15s, re-send."
 say "checks:  ${BRAND}-doctor      manual new identity:  ${BRAND}-hop"
+say "desktop app (optional):  $DEST/scripts/desktop-patch.sh install"
 if [ -d "$BACKUP_ROOT" ]; then
   say "V1 backup (one-way V2 migration): $BACKUP_ROOT"
 fi

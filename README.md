@@ -169,12 +169,36 @@ shared service. Your OpenCode data, sessions, auth and the V1 backup are untouch
 - `NOPASSWD` for `warp-cli` is required for unattended rotation; this is a
   single-user-desktop assumption.
 
+## Desktop app (optional)
+
+The desktop app never runs `~/.local/bin/opencode`. It copies its own bundled CLI to
+`<userData>/cli/<version>/opencode-cli` and spawns that as its background server, so
+the lane — and the per-launch edge pin — is bypassed. IP rotation still happens at
+the host level, but a new `/64` buys less when the app keeps talking over IPv4.
+
+`scripts/desktop-patch.sh` fixes that by wrapping the bundled CLI:
+
+```bash
+./scripts/desktop-patch.sh install   # needs the app to be closed
+./scripts/desktop-patch.sh status    # is the patch active?
+./scripts/desktop-patch.sh undo      # back to the stock bundled CLI
+```
+
+It keeps the original binary as `resources/opencode-cli.real`, writes a small wrapper
+in its place, and wraps any copy the app has already staged under `~/.config` or
+`~/.local/share`. The lane only creates a *mount* namespace, so the app can still
+reach its own server over loopback.
+
+> Re-run `install` after every desktop-app update — updating the app restores the
+> original binary. This is unsupported by OpenCode.
+
 ## Compatibility
 
 - OpenCode **2.x** (developed against 2.2.7). V1 has a partial fallback (log-based
   detection, no `--standalone`) but the installer targets V2.
-- **Desktop app / IDE integrations bypass the wrapper** and therefore the per-launch
-  edge pin. Only the terminal `opencode` goes through the lane.
+- **IDE integrations** (VS Code, JetBrains) still bypass the wrapper and therefore the
+  per-launch edge pin. Only terminal `opencode` and the patched desktop app use the
+  lane.
 - Pairing is unavailable while the shared service is disabled (V2 behaviour).
 
 ## Credits

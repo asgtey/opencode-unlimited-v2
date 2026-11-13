@@ -17,6 +17,8 @@ First public release of the OpenCode 2.x port.
 - `doctor.sh` reports V2 version, `unshare -rm`, `service.json`, DB readability,
   kill-switch chains, IPv6 egress and wrapper/PATH resolution.
 - `zen-hop.sh` manual rotation with kill-switch gate and `/64`-aware comparison.
+- `desktop-patch.sh` wraps the desktop app's bundled CLI (`resources/opencode-cli`)
+  so its private server runs through the lane; supports `install`, `undo`, `status`.
 - `install.sh` backs up V1 data (`opencode.db`, `auth.json`, `storage/`, config)
   before the one-way V2 migration.
 - `install.sh` detects the real binary without selecting its own wrapper.
@@ -31,7 +33,8 @@ First public release of the OpenCode 2.x port.
 - `/64` blacklist normalisation uses Python `ipaddress` instead of string slicing.
 - Guard and hop refuse to take the tunnel down when `OUC_LEAKGUARD` is missing.
 - Log fallback accepts both a log directory and a log file.
-- `uninstall.sh` re-enables the V2 shared service and removes the PATH block.
+- `uninstall.sh` re-enables the V2 shared service, removes the PATH block and
+  restores the desktop app's bundled CLI if it was patched.
 
 ### Removed
 

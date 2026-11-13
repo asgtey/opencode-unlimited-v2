@@ -151,6 +151,17 @@ Check the error text:
 - `Free usage limit reached ...` → IP-based; rotation should help.
 - `OpenCode Go`, `workspace`, `budget` → account-based; rotation cannot help.
 
+### Desktop app ignores the rotation
+
+The app runs its own bundled CLI, not `~/.local/bin/opencode`. Check and fix:
+
+```bash
+~/.local/share/opencode-unlimited/scripts/desktop-patch.sh status
+~/.local/share/opencode-unlimited/scripts/desktop-patch.sh install   # app must be closed
+```
+
+An app update restores the original binary; run `install` again afterwards.
+
 ### Pairing does not work
 
 Expected: V2 pairing requires the shared service, which this project disables.

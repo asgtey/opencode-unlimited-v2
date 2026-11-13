@@ -118,6 +118,17 @@ if [ -f "$HOME/.opencode/AGENTS.md" ] && grep -q "ElectronCursed" "$HOME/.openco
   ok "legacy credit file removed"
 fi
 
+# ---------------------------------------------------------------- desktop app
+# If the bundled CLI of the desktop app was wrapped, restore it first: the
+# wrapper execs $DEST/scripts/zen-lane.sh, which is removed a few lines below.
+if [ -x "$DEST/scripts/desktop-patch.sh" ]; then
+  if "$DEST/scripts/desktop-patch.sh" undo >/dev/null 2>&1; then
+    ok "desktop app restored to its bundled CLI"
+  else
+    say "! if you patched the desktop app, reinstall it to get the original CLI back"
+  fi
+fi
+
 # ---------------------------------------------------------------- state
 rm -f "$HOME/.local/bin/${BRAND}-hop" "$HOME/.local/bin/${BRAND}-doctor" "$HOME/.local/bin/${BRAND}-uninstall"
 rm -rf "$DEST" && ok "scripts + guard state removed"
