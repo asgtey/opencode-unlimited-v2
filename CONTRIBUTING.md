@@ -17,7 +17,7 @@ system, no dependencies beyond Python 3 and the system tools.
 ## Development
 
 ```bash
-git clone https://github.com/YOUR_USER/opencode-unlimited-v2.git
+git clone https://github.com/asgtey/opencode-unlimited-v2.git
 cd opencode-unlimited-v2
 
 # syntax check (required before every commit)
