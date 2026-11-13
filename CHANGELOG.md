@@ -4,6 +4,15 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.3] — 2026-11-13
+
+### Changed
+
+- `docs/PAIRING.md` rewritten in plain language: one "what it is" paragraph, three
+  numbered steps, and the edge cases (LAN, `--remote`, SSH) in a short section.
+- The pairing section of both READMEs is now the same three commands, no
+  explanation up front.
+
 ## [2.0.2] — 2026-11-13
 
 Root-user guidance and `opencode pair`. Desktop app support removed.
@@ -104,6 +113,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.3]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.3
 [2.0.2]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.2
 [2.0.1]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.1
 [2.0.0]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.0

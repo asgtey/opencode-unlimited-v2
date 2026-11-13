@@ -140,45 +140,34 @@ OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخه�
   <li>خروج اضطراری و ریسک‌های باقی‌مانده: <a href="SECURITY.md">SECURITY.md</a></li>
 </ul>
 
-<h2 dir="rtl" align="right">اتصال از یک دستگاه دیگر (opencode pair)</h2>
+<h2 dir="rtl" align="right">اتصال از گوشی یا کامپیوتر دیگر (pair)</h2>
 
 <p dir="rtl" align="right">
-<code>opencode pair</code> یک لینک یک‌بارمصرف و یک QR می‌سازد که مرورگر یا اپ
-OpenCode را به <b>سرور مشترک</b> وصل می‌کند. لینک‌ها ۵ دقیقه اعتبار دارند و فقط
-یک بار کار می‌کنند.
+pair به سرور مشترک نیاز دارد و این پروژه آن را خاموش می‌کند. سه قدم:
 </p>
 
-<p dir="rtl" align="right">
-مهم: pair به سرویس مشترک نیاز دارد و این پروژه آن را خاموش کرده است. پس برای
-pair کردن موقتاً روشنش کن:
-</p>
-
+<ol dir="rtl">
+  <li>روشنش کن:
 <pre dir="ltr" align="left"><code>opencode service unset disabled
-opencode service start
-opencode pair</code></pre>
+opencode service start</code></pre>
+  </li>
+  <li>لینک بگیر و روی دستگاه دیگر باز کن (یا QR را با اپ OpenCode اسکن کن):
+<pre dir="ltr" align="left"><code>opencode pair</code></pre>
+  </li>
+  <li>دوباره خاموشش کن — این قدم را جا نینداز:
+<pre dir="ltr" align="left"><code>opencode service set disabled true</code></pre>
+  </li>
+</ol>
 
 <p dir="rtl" align="right">
-لینک را روی دستگاه دیگر باز کن. اگر از راه SSH وصل می‌شوی، اول پورت را فوروارد کن:
+شبکهٔ دیگر؟ <code>opencode pair --remote</code> — از راه SSH؟ اول پورت را فوروارد کن:
 </p>
 
 <pre dir="ltr" align="left"><code>ssh -L 49374:127.0.0.1:49374 asghar@your-server</code></pre>
 
 <p dir="rtl" align="right">
-بعد از تمام شدن کار، حتماً دوباره خاموشش کن — همین کار لین ترمینال را سالم
-نگه می‌دارد:
-</p>
-
-<pre dir="ltr" align="left"><code>opencode service set disabled true</code></pre>
-
-<p dir="rtl" align="right">
-نشست‌هایی که از مرورگر یا اپ pair شده باز می‌شوند روی سرور مشترک اجرا می‌شوند:
-ترافیکشان باز هم از WARP می‌رود و <code>/64</code> باز هم عوض می‌شود، ولی edge
-تصادفی مخصوص هر اجرا را ندارند.
-</p>
-
-<p dir="rtl" align="right">
-راهنمای کامل (شبکهٔ محلی، تونل SSH و <code>--remote</code>) و نکات امنیتی:
-<a href="docs/PAIRING.md">docs/PAIRING.md</a>
+در مدتی که pair هستی، ترافیک باز هم از WARP می‌رود و <code>/64</code> عوض می‌شود،
+فقط edge تصادفی نداری. جزئیات: <a href="docs/PAIRING.md">docs/PAIRING.md</a>
 </p>
 
 <h2 dir="rtl" align="right">حذف</h2>

@@ -1,148 +1,100 @@
-# Use OpenCode from another device (`opencode pair`)
+# Pairing: use OpenCode from your phone or another computer
 
-`opencode pair` prints one-time links and a QR code that sign a browser or the
-OpenCode app in to your **background server**. Links expire after 5 minutes and
-work once.
+`opencode pair` gives you a link (and a QR code) that opens OpenCode's web UI on
+another device. That's all it does.
 
-Two things to know before you start:
-
-1. **Pairing needs the shared background service.** This project disables it
-   (`opencode service set disabled true`) so that every launch gets a private
-   server inside the lane. Pairing is unavailable while it is disabled — so you
-   turn it on, pair, then turn it off again.
-2. **A paired device talks to the shared server, not the lane.** See
-   [What still works](#what-still-works-while-paired) below.
+The only catch in this project: pairing needs OpenCode's **shared server**, and we
+turn that server off so every launch gets a private one. So you turn it on, pair,
+then turn it off again.
 
 ---
 
-## The short version
+## Three steps
 
-On the machine running OpenCode:
+**1. Turn the shared server on**
 
 ```bash
-opencode service unset disabled     # re-enable the shared server
+opencode service unset disabled
 opencode service start
-opencode pair                       # copy the link or scan the QR
 ```
 
-Open the link on the other device, then close the door again:
+**2. Get a link**
+
+```bash
+opencode pair
+```
+
+Open the printed link on the other device, or scan the QR with the OpenCode app.
+The link works once and expires after 5 minutes.
+
+**3. Turn the shared server off again**
 
 ```bash
 opencode service set disabled true
 ```
 
-`opencode-unlimited-doctor` prints a red line if you forget the last step.
+Step 3 is not optional: while the shared server is running, the terminal loses the
+random-edge part of the lane.
 
 ---
 
-## Reaching the server from the other device
+## If the other device is not on the same machine
 
-### 1. Over SSH (recommended, works everywhere)
-
-The server listens on `127.0.0.1` only, so forward its port through SSH and open
-the link locally:
-
-```bash
-# on your laptop
-ssh -L 49374:127.0.0.1:49374 asghar@your-server
-```
-
-In that SSH session, run `opencode pair` and open the printed
-`http://127.0.0.1:49374/auth/connect/...` link in your laptop's browser.
-
-If the port is not 49374, ask the server:
-
-```bash
-opencode service status      # prints http://127.0.0.1:<port>
-```
-
-Nothing else is exposed, and the kill-switch does not get in the way.
-
-### 2. Same LAN
+**Same Wi-Fi** — nothing extra. The link points at `127.0.0.1`, so replace it with
+your machine's LAN address, or print it that way:
 
 ```bash
 opencode service set hostname 0.0.0.0
-opencode service set port 49374
-opencode service set password "a-long-secret"     # optional but recommended
+opencode service set password "a-long-secret"
 opencode service start
-opencode pair --url http://192.168.1.23:49374     # use the server's LAN IP
+opencode pair --url http://192.168.1.23:49374
 ```
 
-Changing a setting stops the server, so set everything **before** `service start`.
-
-Then open the link on the other device, or point the OpenCode app at
-`http://192.168.1.23:49374`.
-
-Revert when you are done:
-
-```bash
-opencode service unset hostname
-opencode service unset port
-opencode service start
-opencode service set disabled true
-```
-
-> `0.0.0.0` means "every interface". On a public network, set a password first.
-> The project's kill-switch only filters outbound traffic; it does not firewall
-> incoming connections.
-
-### 3. From anywhere (OpenTunnel)
+**Different network** — use the tunnel:
 
 ```bash
 opencode pair --remote
 ```
 
-The first time, OpenCode explains that this exposes the server to the internet
-(end-to-end encrypted, password required) and asks you to accept. Add `--yes` in
-a script with no terminal.
+It asks once before exposing the server to the internet. Traffic is encrypted and
+needs your server password.
 
-OpenTunnel connects **outbound**, so it goes through the WARP tunnel like any
-other traffic. If it will not connect, fall back to the SSH option above.
-
----
-
-## What still works while paired
-
-| | Terminal `opencode` | Paired browser / app |
-|---|---|---|
-| Server | private, inside the lane | shared, outside the lane |
-| Random Cloudflare edge pin | yes | no |
-| Traffic through WARP | yes | yes |
-| Automatic `/64` rotation on a wall | yes | yes |
-| Kill-switch | yes | yes |
-
-The tunnel and the firewall are host-wide, so a paired session still leaves from
-your WARP `/64` and `zen-guard` still rotates it when the free limit appears. The
-only thing it loses is the per-launch random edge, because the shared server
-resolves `opencode.ai` with the host's `/etc/hosts`.
-
-Practical effect: a paired session may hit the limit sooner than the terminal
-one. When it does, wait for the rotation and re-send.
-
----
-
-## Connecting a terminal instead of a browser
-
-You do not have to pair at all. Point a client at the server URL:
+**Over SSH** — forward the port, then pair normally:
 
 ```bash
-OPENCODE_PASSWORD="a-long-secret" opencode --server http://192.168.1.23:49374
+ssh -L 49374:127.0.0.1:49374 asghar@your-server
+opencode pair
 ```
 
-Useful for a second laptop or a tmux session on another box. The same caveats
-apply: that client uses the shared server, not the lane.
+If `49374` is not the port, `opencode service status` prints the real one.
+
+---
+
+## What is different while paired
+
+Sessions opened from the paired device run on the shared server, which sits outside
+the lane:
+
+- traffic still goes through WARP, and `zen-guard` still rotates your `/64`;
+- you do **not** get a random Cloudflare edge per launch.
+
+So a paired session can hit the limit a bit sooner. When it does, wait for the
+rotation and re-send.
+
+The terminal `opencode` is unaffected — it keeps using its private server.
 
 ---
 
 ## Turning it all off
 
 ```bash
-opencode service set disabled true     # back to a private server per launch
-opencode service status                # should say the service is disabled
+opencode service set disabled true
 ```
 
-Paired browser sessions last 30 days. To sign every device out immediately,
-change the password and restart:
+`opencode-unlimited-doctor` shows a red line if you forget.
+
+Paired browsers stay signed in for 30 days. To kick every device out, change the
+password and restart:
 
 ```bash
 opencode service set password "another-long-secret"
@@ -150,11 +102,10 @@ opencode service start
 opencode service set disabled true
 ```
 
-## Security notes
+---
 
-- Pair links are **one-time** and expire after 5 minutes. Do not paste them in a
-  public chat.
-- `--remote` really does publish your server. Verify the accept prompt.
-- Never set `hostname 0.0.0.0` on a machine with a public IP and no password.
-- Turning the shared service back off is part of the procedure, not optional: it
-  is what keeps the edge pin working for the terminal.
+## Security, in one line each
+
+- Pair links are single-use and die after 5 minutes — never post them publicly.
+- `--remote` really does publish your server; accept the prompt only if you mean it.
+- Do not set `hostname 0.0.0.0` on a public network without a password.

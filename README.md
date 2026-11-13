@@ -102,33 +102,27 @@ The WARP trick itself, the `/64` rotation and the kill-switch are unchanged.
 - Rotation is refused if the kill-switch chain is missing.
 - Emergency exit and residual risks: [SECURITY.md](SECURITY.md).
 
-## Use it from another device (`opencode pair`)
+## Pair with your phone or another computer
 
-Pairing needs the **shared** background service, and this project disables it. Turn
-it on just long enough to pair:
+Pairing needs the shared server, which this project turns off. Three steps:
 
 ```bash
+# 1. turn it on
 opencode service unset disabled
 opencode service start
-opencode pair                 # copy the link or scan the QR
-```
 
-Open the link on the other device. Over SSH, forward the port first:
+# 2. get a link (or QR) and open it on the other device
+opencode pair
 
-```bash
-ssh -L 49374:127.0.0.1:49374 asghar@your-server
-```
-
-Then close the door again — this is what keeps the terminal lane intact:
-
-```bash
+# 3. turn it off again — do not skip this
 opencode service set disabled true
 ```
 
-Sessions started from a paired browser or app run on the shared server: they still
-leave through WARP and still get `/64` rotation, but not the per-launch random
-edge. Same-LAN, SSH-tunnel and `--remote` walkthroughs, plus the security notes:
-[docs/PAIRING.md](docs/PAIRING.md).
+Different network? Use `opencode pair --remote`. Over SSH? Forward the port first:
+`ssh -L 49374:127.0.0.1:49374 user@server`.
+
+A paired session still goes through WARP and still gets `/64` rotation, but not the
+random edge. Details: [docs/PAIRING.md](docs/PAIRING.md).
 
 ## Uninstall
 
