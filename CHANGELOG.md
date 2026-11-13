@@ -4,6 +4,17 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.10] — 2026-11-13
+
+### Fixed
+
+- Root installs silently lost `OUC_SERVER=1`. When root runs the installer it
+  re-runs itself as a normal account through `runuser -l` / `su -`, and a login
+  shell drops every `OUC_*` from the caller — so a VPS installed as root ended
+  up **without** server mode, and SSH died on the next reconnect. The second pass
+  now forwards `OUC_SERVER`, `OUC_PAIR`, `OUC_SSH_CLIENT_IP` and `OUC_SSH_PORT`
+  (properly quoted), and says `server mode is carried over`.
+
 ## [2.0.9] — 2026-11-13
 
 ### Added
@@ -206,6 +217,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.10]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.10
 [2.0.9]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.9
 [2.0.8]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.8
 [2.0.7]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.7

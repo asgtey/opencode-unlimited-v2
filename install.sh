@@ -196,21 +196,31 @@ if [ "$(id -u)" = 0 ]; then
   cleanup_sudo() { rm -f "$TMP_SUDO"; }
   trap cleanup_sudo EXIT INT TERM
 
+  # `runuser -l` / `su -` start a login shell, so every OUC_* set by the caller
+  # is gone in the second pass. Forward the ones that change behaviour —
+  # otherwise a root install silently ends up WITHOUT server mode.
+  FORWARD=""
+  for _v in OUC_SERVER OUC_PAIR OUC_SSH_CLIENT_IP OUC_SSH_PORT; do
+    _val="$(printenv "$_v" 2>/dev/null || true)"
+    [ -n "$_val" ] && FORWARD="$FORWARD $_v=$(printf '%q' "$_val")"
+  done
+  unset _v _val
+  RUN="bash '$SELF'"
+  [ -n "$FORWARD" ] && RUN="$FORWARD $RUN"
+
   echo ""
   say "starting the installer again as '$NEWUSER'…"
+  [ "$SERVER_MODE" = 1 ] && say "  server mode is carried over (OUC_SERVER=1)"
   echo ""
-  if [ "$HAVE_TTY" = 1 ]; then
-    if command -v runuser >/dev/null 2>&1; then
-      runuser -l "$NEWUSER" -c "bash '$SELF'" < /dev/tty
-    else
-      su - "$NEWUSER" -c "bash '$SELF'" < /dev/tty
-    fi
+  if command -v runuser >/dev/null 2>&1; then
+    RUNNER="runuser -l $NEWUSER -c"
   else
-    if command -v runuser >/dev/null 2>&1; then
-      runuser -l "$NEWUSER" -c "bash '$SELF'" < /dev/null
-    else
-      su - "$NEWUSER" -c "bash '$SELF'" < /dev/null
-    fi
+    RUNNER="su - $NEWUSER -c"
+  fi
+  if [ "$HAVE_TTY" = 1 ]; then
+    $RUNNER "$RUN" < /dev/tty
+  else
+    $RUNNER "$RUN" < /dev/null
   fi
   RC=$?
 
