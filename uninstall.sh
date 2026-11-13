@@ -120,7 +120,8 @@ if [ -f "$HOME/.opencode/AGENTS.md" ] && grep -q "ElectronCursed" "$HOME/.openco
 fi
 
 # ---------------------------------------------------------------- state
-rm -f "$HOME/.local/bin/${BRAND}-hop" "$HOME/.local/bin/${BRAND}-doctor" "$HOME/.local/bin/${BRAND}-uninstall"
+rm -f "$HOME/.local/bin/${BRAND}-hop" "$HOME/.local/bin/${BRAND}-doctor" \
+      "$HOME/.local/bin/${BRAND}-share" "$HOME/.local/bin/${BRAND}-uninstall"
 rm -rf "$DEST" && ok "scripts + guard state removed"
 say "V1 backups kept in: $HOME/.local/share/opencode-unlimited-backups"
 

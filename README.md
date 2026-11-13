@@ -133,6 +133,7 @@ Your sessions, auth and backups are untouched.
 - [docs/PAIRING.md](docs/PAIRING.md) — connect from another device with `opencode pair`
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the namespace, DB check and firewall work
 - [docs/V1-V2.md](docs/V1-V2.md) — line-by-line diff with the upstream V1 scripts
+- [docs/HOST-PROJECTS.md](docs/HOST-PROJECTS.md) — edit a host folder (VMware, SMB, SSHFS)
 - [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md)
 
 ## Credits

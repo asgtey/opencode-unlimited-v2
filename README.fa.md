@@ -191,6 +191,7 @@ pair از قبل آماده است. فقط این را بزن:
   <li><a href="docs/PAIRING.md">docs/PAIRING.md</a> — اتصال از دستگاه دیگر با <code>opencode pair</code></li>
   <li><a href="docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a> — جزئیات فنی namespace، دیتابیس و فایروال</li>
   <li><a href="docs/V1-V2.md">docs/V1-V2.md</a> — تفاوت خط‌به‌خط با نسخهٔ اصلی</li>
+  <li><a href="docs/HOST-PROJECTS.md">docs/HOST-PROJECTS.md</a> — ویرایش پروژهٔ روی ویندوز از داخل ماشین مجازی</li>
   <li><a href="CONTRIBUTING.md">CONTRIBUTING.md</a> · <a href="CHANGELOG.md">CHANGELOG.md</a></li>
 </ul>
 

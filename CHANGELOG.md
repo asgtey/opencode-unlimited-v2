@@ -4,6 +4,19 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.8] — 2026-11-13
+
+Editing a project that lives on the Windows/macOS host, from inside the VM.
+
+### Added
+
+- `docs/HOST-PROJECTS.md`: VMware Shared Folders (recommended), SMB/CIFS and
+  SSHFS, with the `fstab` line, the `uid`/`gid` mount options, and the two git
+  settings a share needs.
+- `scripts/host-share-check.sh`, installed as `opencode-unlimited-share`: reports
+  the filesystem, writability, git "dubious ownership", executable-bit noise and
+  the exact fix for each. Read-only apart from one write test.
+
 ## [2.0.7] — 2026-11-13
 
 The repository is public again: one command, no access code.
@@ -187,6 +200,7 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.8]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.8
 [2.0.7]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.7
 [2.0.6]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.6
 [2.0.5]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.5
