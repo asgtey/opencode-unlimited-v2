@@ -1,212 +1,112 @@
 # OpenCode Unlimited — V2
 
-Unofficial **OpenCode 2.x** port of [`opencode-unlimited-usage`](https://github.com/ElectronBreach/opencode-unlimited-usage):
-a per-launch random Cloudflare edge + a rotating WARP IPv6 `/64`, behind a fail-closed
-kill-switch, with automatic free-tier wall detection.
+Bypass OpenCode's free-tier limit on Linux. **One command to install.** When the
+wall hits, your IPv6 identity is rotated automatically and you keep working.
 
-[فارسی](README.fa.md) · [Architecture](docs/ARCHITECTURE.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [V1 vs V2](docs/V1-V2.md) · [Security](SECURITY.md)
+[فارسی](README.fa.md) · [Troubleshooting](docs/TROUBLESHOOTING.md) · [How it works](docs/ARCHITECTURE.md) · [Security](SECURITY.md)
 
-> [!WARNING]
-> This is an unofficial community project, not affiliated with OpenCode or Cloudflare.
-> Rotating network identity to extend a free tier may violate the provider's terms of
-> service and can get your account limited. Use at your own risk.
+> **Unofficial.** Not affiliated with OpenCode or Cloudflare. Rotating identity to
+> extend a free tier may break the provider's terms. Use at your own risk.
 
 ---
 
-## Why this fork exists
-
-OpenCode 2 changed two things that break the original V1 scripts:
-
-1. **Requests moved to a background server.** V2 has one shared server per user. The
-   TUI is only a client. Pinning `/etc/hosts` inside a namespace does nothing if the
-   server making the request lives outside it. The lane therefore forces a **private
-   server** (`--standalone`) and the installer disables the shared one
-   (`opencode service set disabled true`).
-2. **The free-tier wall moved to SQLite.** V2 does not reliably write
-   `provider.free-limit` to `opencode.log`. It stores the error in
-   `session_message.data` inside `~/.local/share/opencode/opencode.db`. The guard now
-   reads that database (read-only) and keeps the log scan as a fallback.
-
-Everything else — WARP TUN mode, `/64` rotation, `OUC_LEAKGUARD` kill-switch, keeper —
-is the original design.
-
----
-
-## How it works
-
-```text
-            ┌──────────────────────────── opencode (wrapper) ───────────────────────────┐
-            │  zen-lane.sh                                                             │
-            │    unshare -rm  ──►  private mount namespace                             │
-            │      /etc/hosts  ──►  opencode.ai = one random Cloudflare AAAA edge      │
-            │      /etc/machine-id ──► fresh random                                    │
-            │    exec opencode --standalone  ──► private server (same namespace)       │
-            └───────────────────────────────────┬──────────────────────────────────────┘
-                                                │ HTTPS via WARP TUN
-                                                ▼
-             Cloudflare WARP  ──►  a fresh IPv6 /64 per registration
-
-  keeper (root service)          zen-guard (user service)
-  ├─ force TUN mode              ├─ read session_message for provider.free-limit
-  ├─ reconnect when down         ├─ on wall: blacklist /64, pause keeper
-  └─ rebuild OUC_LEAKGUARD       ├─ re-register WARP, verify new /64
-     (v4 + v6, fail closed)      └─ resume keeper, retry up to 8×
-
-  zen-hop  = manual rotation      doctor = read-only health report
-```
-
-A free-tier wall no longer needs a restart: the guard changes the host's WARP
-registration, so the next request from the running TUI leaves from a new `/64`.
-Re-send the message after the rotation.
-
----
-
-## Requirements
-
-- Linux with systemd (tested on **Linux Mint 22.3** and **Ubuntu 24.04**)
-- Python 3.10+, `curl`, `iptables`/`ip6tables`, `/dev/net/tun`
-- Unprivileged user namespaces (`unshare -rm`)
-- A network where Cloudflare WARP can connect
-- `~/.local/bin` **before** `~/.opencode/bin` in `PATH` (the installer adds a
-  removable block for this)
-
-## Install
+## Install (one command)
 
 ```bash
-git clone https://github.com/asgtey/opencode-unlimited-v2.git
-cd opencode-unlimited-v2
-chmod +x install.sh uninstall.sh scripts/*.sh
-./install.sh
-exec $SHELL
-opencode
+curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash
 ```
 
-The installer:
+Then close and reopen your terminal, and run `opencode` like always.
 
-1. checks systemd, Python, curl, TUN and `unshare`;
-2. installs/upgrades to OpenCode 2.x — **backing up V1 data first**;
-3. runs `opencode service set disabled true`;
-4. installs WARP (using the Ubuntu base codename, so Mint works);
-5. installs the root `opencode-unlimited-keeper` service;
-6. installs the user `opencode-unlimited-guard` service;
-7. writes `~/.local/bin/opencode` → lane and a PATH block;
-8. verifies IPv6 egress.
+The command downloads this repo to a temp folder, runs `install.sh` (it asks for
+sudo), and deletes the folder afterwards. No `git` needed.
 
-> Do **not** run it with `sudo`. It asks for sudo when needed.
+**Requirements:** Linux with systemd, `sudo`, `python3`, and a network where
+Cloudflare WARP can connect. Tested on Linux Mint 22.3 and Ubuntu 24.04.
 
-## Verify
+If unprivileged user namespaces are blocked (Ubuntu 24.04 and Mint 22.x do this by
+default), the installer stops and prints the one-line `sysctl` fix. Run it, then run
+the install command again.
+
+## When the limit hits
+
+1. Do nothing.
+2. Wait 15–90 seconds (`zen-guard` is rotating your `/64`).
+3. Re-send the message.
+
+Manual rotation, if you want a new identity right now:
 
 ```bash
-opencode --version                  # 2.x
-opencode-unlimited-doctor           # all green (or a fix next to each red line)
-opencode debug paths db             # session database actually in use
-curl -6 -s https://api64.ipify.org  # 2606:... or 2a09:...
+opencode-unlimited-hop
 ```
 
-## Daily use
+Health check:
 
-- When the free wall appears, **wait ~15–90 s** and **re-send** the message. The guard
-  rotates automatically.
-- Manual rotation: `opencode-unlimited-hop` (prints old/new `/64`; run again if
-  Cloudflare returns the same block).
-- Health: `opencode-unlimited-doctor`.
-- Logs: `~/.local/share/opencode-unlimited/guard/guard.log` and
-  `journalctl --user -u opencode-unlimited-guard -f`.
+```bash
+opencode-unlimited-doctor
+```
 
-## Configuration
+## What it installs
 
-The installer writes these into the guard unit; all are optional overrides:
-
-| Variable | Meaning |
+| Piece | Job |
 |---|---|
-| `OUC_REAL_BIN` | real OpenCode binary (never the wrapper) |
-| `OUC_WARP_BIN` | `warp-cli` path |
-| `OUC_KEEPER_UNIT` | keeper unit name (default `opencode-unlimited-keeper`) |
-| `OUC_IPTABLES` / `OUC_IP6TABLES` | firewall binaries |
-| `OUC_SYSTEMCTL` | `systemctl` path |
+| `zen-lane` | runs `opencode` with a random Cloudflare edge and a private server |
+| `zen-guard` | watches for the limit error, rotates WARP to a fresh `/64` |
+| `warp-keeper` | root service: keeps WARP up and keeps the kill-switch installed |
+| `zen-hop` | manual "give me a new `/64`" |
+| `doctor` | read-only health report |
 
-Paths used at runtime:
+Everything lives in `~/.local/share/opencode-unlimited/`. System touches are two
+systemd units, one sudoers file and one firewall chain — all removed by
+`uninstall.sh`.
 
-| Path | Purpose |
-|---|---|
-| `~/.local/share/opencode-unlimited/scripts/` | installed scripts |
-| `~/.local/share/opencode-unlimited/guard/state.json` | blacklist + counters |
-| `~/.local/share/opencode/opencode.db` | V2 session DB (read-only) |
-| `~/.local/share/opencode/log/` | log fallback |
-| `~/.local/share/opencode-unlimited-backups/` | V1 backup before upgrade |
+## Why this fork
 
-## Troubleshooting
+OpenCode 2 changed two things that break the V1 scripts:
 
-See [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). The five most common:
+1. **Requests moved to a background server.** The TUI is only a client. So the
+   lane forces a private server (`--standalone`) and the installer disables the
+   shared one (`opencode service set disabled true`).
+2. **The limit error moved to SQLite.** V2 stores it in
+   `~/.local/share/opencode/opencode.db`, not in the log. The guard reads that
+   database (read-only) and keeps the log as a fallback.
 
-| Symptom | Fix |
-|---|---|
-| `unshare -rm` fails | enable `kernel.apparmor_restrict_unprivileged_userns=0` |
-| `apt` rejects the WARP repo (`zena`) | repo line must use `noble` (installer handles it) |
-| `opencode` bypasses the lane | `source ~/.config/opencode-unlimited/path.sh` |
-| no IPv6 egress | WARP is not connected; check `warp-cli status` |
-| internet dead after install | WARP unreachable → use the escape hatch in [SECURITY.md](SECURITY.md#emergency-exit) |
+The WARP trick itself, the `/64` rotation and the kill-switch are unchanged.
+
+## Safety
+
+- Kill-switch is **fail-closed**: tunnel down → traffic goes nowhere, never out of
+  your real IP.
+- The lane refuses to start if the namespace or the `/etc/hosts` pin fails.
+- Rotation is refused if the kill-switch chain is missing.
+- Emergency exit and residual risks: [SECURITY.md](SECURITY.md).
+
+## Desktop app
+
+The desktop app runs its own bundled CLI, so it skips the lane. Optional fix:
+
+```bash
+~/.local/share/opencode-unlimited/scripts/desktop-patch.sh install
+```
+
+Run it again after every app update. `undo` puts the original back.
 
 ## Uninstall
 
 ```bash
-cd opencode-unlimited-v2
-./uninstall.sh
+curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash -s -- --uninstall
 ```
 
-It stops and removes both services, flushes `OUC_LEAKGUARD`, removes the sudoers
-file and the PATH block, restores `~/.local/bin/opencode`, and re-enables the V2
-shared service. Your OpenCode data, sessions, auth and the V1 backup are untouched.
+Your sessions, auth and backups are untouched.
 
-## Security model (short version)
+## Docs
 
-- The kill-switch allows only loopback, LAN, established connections, WARP control
-  ranges and the WARP interface. If the tunnel is down, traffic goes **nowhere**.
-- The lane fails closed if `unshare` or the `/etc/hosts` bind fails.
-- The guard/hop refuse to drop the tunnel when `OUC_LEAKGUARD` is missing.
-- Residual risk: the IPv6 allow rule for `2606:4700::/32` is broad because WARP's
-  control plane needs it. See [SECURITY.md](SECURITY.md) for hardening.
-- `NOPASSWD` for `warp-cli` is required for unattended rotation; this is a
-  single-user-desktop assumption.
-
-## Desktop app (optional)
-
-The desktop app never runs `~/.local/bin/opencode`. It copies its own bundled CLI to
-`<userData>/cli/<version>/opencode-cli` and spawns that as its background server, so
-the lane — and the per-launch edge pin — is bypassed. IP rotation still happens at
-the host level, but a new `/64` buys less when the app keeps talking over IPv4.
-
-`scripts/desktop-patch.sh` fixes that by wrapping the bundled CLI:
-
-```bash
-./scripts/desktop-patch.sh install   # needs the app to be closed
-./scripts/desktop-patch.sh status    # is the patch active?
-./scripts/desktop-patch.sh undo      # back to the stock bundled CLI
-```
-
-It keeps the original binary as `resources/opencode-cli.real`, writes a small wrapper
-in its place, and wraps any copy the app has already staged under `~/.config` or
-`~/.local/share`. The lane only creates a *mount* namespace, so the app can still
-reach its own server over loopback.
-
-> Re-run `install` after every desktop-app update — updating the app restores the
-> original binary. This is unsupported by OpenCode.
-
-## Compatibility
-
-- OpenCode **2.x** (developed against 2.2.7). V1 has a partial fallback (log-based
-  detection, no `--standalone`) but the installer targets V2.
-- **IDE integrations** (VS Code, JetBrains) still bypass the wrapper and therefore the
-  per-launch edge pin. Only terminal `opencode` and the patched desktop app use the
-  lane.
-- Pairing is unavailable while the shared service is disabled (V2 behaviour).
+- [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) — every error and its fix
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the namespace, DB check and firewall work
+- [docs/V1-V2.md](docs/V1-V2.md) — line-by-line diff with the upstream V1 scripts
+- [CONTRIBUTING.md](CONTRIBUTING.md) · [CHANGELOG.md](CHANGELOG.md)
 
 ## Credits
 
-- Original project: [ElectronBreach/opencode-unlimited-usage](https://github.com/ElectronBreach/opencode-unlimited-usage) (MIT).
-- V2 adaptation: this repository.
-- Not affiliated with OpenCode or Cloudflare.
-
-## License
-
-MIT — see [LICENSE](LICENSE). The original copyright notice is retained.
+Original project: [ElectronBreach/opencode-unlimited-usage](https://github.com/ElectronBreach/opencode-unlimited-usage) (MIT).
+V2 adaptation: this repository. MIT — see [LICENSE](LICENSE).

@@ -1,204 +1,149 @@
-# OpenCode Unlimited — نسخهٔ V2
+<h1 dir="rtl" align="right">OpenCode Unlimited — نسخهٔ ۲</h1>
 
-پورت غیررسمی پروژهٔ [`opencode-unlimited-usage`](https://github.com/ElectronBreach/opencode-unlimited-usage)
-برای **OpenCode 2.x**: انتخاب تصادفی یک edge از Cloudflare در هر اجرا، چرخش خودکار
-`/64` آی‌پی‌وی‌6 با WARP، و یک kill-switch که در صورت قطع تونل، ترافیک را بیرون نمی‌فرستد.
+<p dir="rtl" align="right">
+دور زدن محدودیت سهمیهٔ رایگان OpenCode روی لینوکس، با <b>یک دستور نصب</b>.<br>
+وقتی محدودیت می‌خورد، هویت شبکه‌ات خودکار عوض می‌شود و به کارت ادامه می‌دهی.
+</p>
 
-[English](README.md) · [معماری](docs/ARCHITECTURE.md) · [عیب‌یابی](docs/TROUBLESHOOTING.md) · [تفاوت V1/V2](docs/V1-V2.md) · [امنیت](SECURITY.md)
+<p dir="rtl" align="right">
+<a href="README.md">English</a> ·
+<a href="docs/TROUBLESHOOTING.md">عیب‌یابی</a> ·
+<a href="docs/ARCHITECTURE.md">طرز کار</a> ·
+<a href="SECURITY.md">امنیت</a>
+</p>
 
-> [!WARNING]
-> این پروژه غیررسمی است و به OpenCode یا Cloudflare وابستگی ندارد. عوض کردن هویت شبکه
-> برای دور زدن سهمیهٔ رایگان ممکن است خلاف شرایط استفادهٔ سرویس باشد و به محدود شدن
-> حساب منجر شود. مسئولیتش با خودت است.
+<hr>
 
----
+<blockquote dir="rtl">
+<p align="right">
+⚠️ <b>غیررسمی است.</b> به OpenCode یا Cloudflare وابستگی ندارد. عوض کردن هویت شبکه
+برای دور زدن سهمیهٔ رایگان ممکن است خلاف شرایط استفادهٔ سرویس باشد. مسئولیتش با خودت است.
+</p>
+</blockquote>
 
-## چرا این نسخه ساخته شد
+<h2 dir="rtl" align="right">نصب با یک دستور</h2>
 
-OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های V1 را از کار می‌انداخت:
+<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash</code></pre>
 
-1. **درخواست‌ها به سرور پس‌زمینه منتقل شدند.** در V2 یک سرور مشترک برای هر کاربر
-   اجرا می‌شود و TUI فقط کلاینت است. اگر سرور بیرون از namespace لین باشد، pin کردن
-   `/etc/hosts` فایده‌ای ندارد. پس لین یک **سرور خصوصی** (`--standalone`) می‌سازد و
-   نصب‌کننده سرور مشترک را خاموش می‌کند (`opencode service set disabled true`).
-2. **خطای سهمیه به SQLite منتقل شد.** V2 خطای `provider.free-limit` را قابل‌اعتماد در
-   `opencode.log` نمی‌نویسد؛ آن را در `session_message.data` داخل
-   `~/.local/share/opencode/opencode.db` ذخیره می‌کند. guard حالا این دیتابیس را
-   فقط‌خواندنی می‌خواند و اسکن log به‌عنوان fallback می‌ماند.
+<p dir="rtl" align="right">
+بعد ترمینال را ببند و باز کن، و مثل همیشه بنویس <code>opencode</code>.
+</p>
 
-بقیهٔ طرح (WARP TUN، چرخش `/64`، kill-switch، keeper) همان نسخهٔ اصلی است.
+<p dir="rtl" align="right">
+این دستور کل پروژه را در یک پوشهٔ موقت دانلود می‌کند، <code>install.sh</code> را اجرا
+می‌کند (رمز sudo را می‌پرسد) و بعد پوشه را پاک می‌کند. به <code>git</code> نیازی نیست.
+</p>
 
----
+<p dir="rtl" align="right"><b>پیش‌نیازها:</b></p>
 
-## چطور کار می‌کند
+<ul dir="rtl">
+  <li>لینوکس با systemd — تست‌شده روی Linux Mint 22.3 و Ubuntu 24.04</li>
+  <li>دسترسی <code>sudo</code> و <code>python3</code></li>
+  <li>شبکه‌ای که Cloudflare WARP در آن وصل شود</li>
+</ul>
 
-```text
-opencode (wrapper) ──► zen-lane.sh
-                       ├─ unshare -rm            (namespace خصوصی)
-                       ├─ /etc/hosts             (opencode.ai = یک edge تصادفی Cloudflare)
-                       ├─ /etc/machine-id        (تصادفی)
-                       └─ opencode --standalone  (سرور خصوصی، داخل همان namespace)
+<h2 dir="rtl" align="right">وقتی محدودیت خورد</h2>
 
-Cloudflare WARP ──► برای هر registration یک IPv6 /64 تازه
+<ol dir="rtl">
+  <li>هیچ کاری نکن.</li>
+  <li>۱۵ تا ۹۰ ثانیه صبر کن — <code>zen-guard</code> دارد آی‌پی را عوض می‌کند.</li>
+  <li>همان پیام را دوباره بفرست.</li>
+</ol>
 
-keeper (سرویس root)              zen-guard (سرویس کاربر)
-├─ TUN mode را تحمیل می‌کند      ├─ DB را برای provider.free-limit می‌خواند
-├─ تونل را برمی‌گرداند            ├─ /64 سوخته را blacklist می‌کند
-└─ OUC_LEAKGUARD را می‌سازد      ├─ WARP را دوباره register می‌کند
-                                 └─ keeper را برمی‌گرداند
+<p dir="rtl" align="right">
+اگر همین حالا هویت تازه می‌خواهی:
+</p>
 
-zen-hop = چرخش دستی              doctor = گزارش سلامت فقط‌خواندنی
-```
+<pre dir="ltr" align="left"><code>opencode-unlimited-hop</code></pre>
 
-بعد از هر لیمیت لازم نیست OpenCode را ببندی؛ guard آی‌پی خروجی میزبان را عوض می‌کند و
-درخواست بعدی از `/64` جدید می‌رود. فقط **پیام را دوباره بفرست**.
+<p dir="rtl" align="right">
+گزارش سلامت:
+</p>
 
----
+<pre dir="ltr" align="left"><code>opencode-unlimited-doctor</code></pre>
 
-## پیش‌نیازها
+<h2 dir="rtl" align="right">چه چیزهایی نصب می‌شود</h2>
 
-- لینوکس با systemd (تست‌شده روی **Linux Mint 22.3** و **Ubuntu 24.04**)
-- Python 3.10+، `curl`، `iptables`/`ip6tables`، `/dev/net/tun`
-- user namespace غیررایگان (`unshare -rm`)
-- شبکه‌ای که WARP در آن وصل شود
-- `~/.local/bin` **قبل از** `~/.opencode/bin` در `PATH` (نصب‌کننده یک بلوک قابل‌حذف
-  اضافه می‌کند)
+<ul dir="rtl">
+  <li><code>zen-lane</code> — <code>opencode</code> را با یک edge تصادفی Cloudflare و یک سرور خصوصی اجرا می‌کند</li>
+  <li><code>zen-guard</code> — خطای محدودیت را می‌بیند و WARP را روی یک <code>/64</code> تازه می‌برد</li>
+  <li><code>warp-keeper</code> — سرویس root: تونل را زنده و kill-switch را نصب‌شده نگه می‌دارد</li>
+  <li><code>zen-hop</code> — چرخش دستی، «همین حالا یک <code>/64</code> تازه بده»</li>
+  <li><code>doctor</code> — گزارش سلامت، فقط‌خواندنی</li>
+</ul>
 
-## نصب
+<p dir="rtl" align="right">
+همه‌چیز داخل <code>~/.local/share/opencode-unlimited/</code> است. تنها جاهایی که به
+سیستم دست می‌زند: دو یونیت systemd، یک فایل sudoers و یک زنجیرهٔ فایروال — که
+<code>uninstall.sh</code> همه را برمی‌دارد.
+</p>
 
-```bash
-git clone https://github.com/asgtey/opencode-unlimited-v2.git
-cd opencode-unlimited-v2
-chmod +x install.sh uninstall.sh scripts/*.sh
-./install.sh
-exec $SHELL
-opencode
-```
+<h2 dir="rtl" align="right">چرا این نسخه ساخته شد</h2>
 
-نصب‌کننده به ترتیب:
+<p dir="rtl" align="right">
+OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخهٔ ۱ را از کار می‌انداخت:
+</p>
 
-1. systemd، Python، curl، TUN و `unshare` را بررسی می‌کند؛
-2. OpenCode 2.x را نصب/ارتقا می‌دهد — **قبلش از دادهٔ V1 بکاپ می‌گیرد**؛
-3. `opencode service set disabled true` را اجرا می‌کند؛
-4. WARP را نصب می‌کند (با کدنام پایهٔ Ubuntu، پس روی Mint هم کار می‌کند)؛
-5. سرویس root به نام `opencode-unlimited-keeper` را نصب می‌کند؛
-6. سرویس کاربر `opencode-unlimited-guard` را نصب می‌کند؛
-7. فایل `~/.local/bin/opencode` را به لین وصل می‌کند و بلوک PATH می‌نویسد؛
-8. خروجی IPv6 را تست می‌کند.
+<ol dir="rtl">
+  <li>
+    <b>درخواست‌ها به یک سرور پس‌زمینه منتقل شدند.</b> TUI فقط کلاینت است. پس این
+    پروژه یک سرور خصوصی می‌سازد (<code>--standalone</code>) و سرور مشترک را خاموش
+    می‌کند.
+  </li>
+  <li>
+    <b>خطای محدودیت به دیتابیس رفت.</b> V2 آن را در
+    <code>~/.local/share/opencode/opencode.db</code> ذخیره می‌کند، نه در لاگ. guard
+    آن دیتابیس را فقط‌خواندنی می‌خواند و لاگ را به‌عنوان پشتیبان نگه می‌دارد.
+  </li>
+</ol>
 
-> با `sudo` اجرا نکن. خودش هرجا لازم باشد رمز می‌پرسد.
+<p dir="rtl" align="right">
+خود ترفند WARP، چرخش <code>/64</code> و kill-switch دست‌نخورده مانده‌اند.
+</p>
 
-## بررسی سلامت
+<h2 dir="rtl" align="right">امنیت</h2>
 
-```bash
-opencode --version                  # باید 2.x
-opencode-unlimited-doctor           # همه سبز، یا راه‌حل کنار هر خط قرمز
-opencode debug paths db             # دیتابیس واقعی V2
-curl -6 -s https://api64.ipify.org  # باید 2606:... یا 2a09:... باشد
-```
+<ul dir="rtl">
+  <li>kill-switch در حالت <b>fail-closed</b> است: اگر تونل قطع شود، ترافیک هیچ‌جا نمی‌رود و آی‌پی واقعی‌ات لو نمی‌رود.</li>
+  <li>اگر namespace یا pin کردن <code>/etc/hosts</code> شکست بخورد، لین بالا نمی‌آید.</li>
+  <li>اگر زنجیرهٔ kill-switch نباشد، چرخش انجام نمی‌شود.</li>
+  <li>خروج اضطراری و ریسک‌های باقی‌مانده: <a href="SECURITY.md">SECURITY.md</a></li>
+</ul>
 
-## استفادهٔ روزمره
+<h2 dir="rtl" align="right">اپ دسکتاپ (اختیاری)</h2>
 
-- وقتی لیمیت دیدی، **۱۵ تا ۹۰ ثانیه صبر کن** و **پیام را دوباره بفرست**.
-- چرخش دستی: `opencode-unlimited-hop` (اگر گفت `same /64` دوباره اجرا کن).
-- گزارش: `opencode-unlimited-doctor`.
-- لاگ‌ها: `~/.local/share/opencode-unlimited/guard/guard.log` و
-  `journalctl --user -u opencode-unlimited-guard -f`.
+<p dir="rtl" align="right">
+اپ دسکتاپ نسخهٔ CLI خودش را اجرا می‌کند و از لین عبور نمی‌کند. اگر با اپ دسکتاپ کار
+می‌کنی، یک بار این را بزن (اپ باید بسته باشد):
+</p>
 
-## تنظیمات
+<pre dir="ltr" align="left"><code>~/.local/share/opencode-unlimited/scripts/desktop-patch.sh install</code></pre>
 
-نصب‌کننده این‌ها را در یونیت guard می‌نویسد؛ همه اختیاری‌اند:
+<p dir="rtl" align="right">
+بعد از هر آپدیت اپ دسکتاپ دوباره اجرا کن. برای برگشت:
+<code>... desktop-patch.sh undo</code>
+</p>
 
-| متغیر | معنی |
-|---|---|
-| `OUC_REAL_BIN` | باینری واقعی OpenCode (هرگز wrapper) |
-| `OUC_WARP_BIN` | مسیر `warp-cli` |
-| `OUC_KEEPER_UNIT` | نام یونیت keeper |
-| `OUC_IPTABLES` / `OUC_IP6TABLES` | مسیر ابزارهای فایروال |
-| `OUC_SYSTEMCTL` | مسیر `systemctl` |
+<h2 dir="rtl" align="right">حذف</h2>
 
-مسیرهای مهم:
+<pre dir="ltr" align="left"><code>curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash -s -- --uninstall</code></pre>
 
-| مسیر | کاربرد |
-|---|---|
-| `~/.local/share/opencode-unlimited/scripts/` | اسکریپت‌های نصب‌شده |
-| `~/.local/share/opencode-unlimited/guard/state.json` | blacklist و شمارنده‌ها |
-| `~/.local/share/opencode/opencode.db` | دیتابیس نشست V2 (فقط‌خواندنی) |
-| `~/.local/share/opencode/log/` | fallback لاگ |
-| `~/.local/share/opencode-unlimited-backups/` | بکاپ قبل از مهاجرت V1 |
+<p dir="rtl" align="right">
+نشست‌ها، ورودها و بکاپ‌هایت دست‌نخورده می‌مانند.
+</p>
 
-## عیب‌یابی
+<h2 dir="rtl" align="right">مستندات</h2>
 
-راهنمای کامل: [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md). پنج مورد رایج:
+<ul dir="rtl">
+  <li><a href="docs/TROUBLESHOOTING.md">docs/TROUBLESHOOTING.md</a> — همهٔ خطاها و راه‌حلشان</li>
+  <li><a href="docs/ARCHITECTURE.md">docs/ARCHITECTURE.md</a> — جزئیات فنی namespace، دیتابیس و فایروال</li>
+  <li><a href="docs/V1-V2.md">docs/V1-V2.md</a> — تفاوت خط‌به‌خط با نسخهٔ اصلی</li>
+  <li><a href="CONTRIBUTING.md">CONTRIBUTING.md</a> · <a href="CHANGELOG.md">CHANGELOG.md</a></li>
+</ul>
 
-| نشانه | راه‌حل |
-|---|---|
-| `unshare -rm` خطا می‌دهد | `kernel.apparmor_restrict_unprivileged_userns=0` |
-| `apt` مخزن WARP را رد می‌کند (`zena`) | خط مخزن باید `noble` باشد (نصب‌کننده انجام می‌دهد) |
-| `opencode` از لین عبور نمی‌کند | `source ~/.config/opencode-unlimited/path.sh` |
-| خروجی IPv6 ندارد | WARP وصل نیست؛ `warp-cli status` |
-| اینترنت بعد از نصب قطع شد | WARP در دسترس نیست → بخش «خروج اضطراری» در [SECURITY.md](SECURITY.md) |
+<h2 dir="rtl" align="right">اعتبار و مجوز</h2>
 
-## حذف
-
-```bash
-cd opencode-unlimited-v2
-./uninstall.sh
-```
-
-هر دو سرویس را متوقف و حذف می‌کند، زنجیرهٔ `OUC_LEAKGUARD` را پاک می‌کند، فایل
-sudoers و بلوک PATH را برمی‌دارد، `~/.local/bin/opencode` را به باینری اصلی برمی‌گرداند
-و سرویس مشترک V2 را دوباره فعال می‌کند. داده، نشست‌ها، auth و بکاپ V1 دست‌نخورده
-می‌مانند.
-
-## امنیت (خلاصه)
-
-- kill-switch فقط loopback، LAN، اتصال‌های established، محدودهٔ کنترل WARP و اینترفیس
-  WARP را عبور می‌دهد. اگر تونل قطع باشد، ترافیک **جایی نمی‌رود**.
-- لین اگر `unshare` یا bind روی `/etc/hosts` شکست بخورد، fail-closed می‌کند.
-- guard/hop اگر `OUC_LEAKGUARD` نباشد، تونل را پایین نمی‌آورند.
-- ریسک باقی‌مانده: قاعدهٔ `2606:4700::/32` برای صفحهٔ کنترل WARP لازم است ولی broad
-  است. راه سخت‌گیرانه‌تر در [SECURITY.md](SECURITY.md) آمده است.
-- `NOPASSWD` برای `warp-cli` لازم است؛ فرض پروژه، سیستم شخصی تک‌کاربره است.
-
-## اپ دسکتاپ (اختیاری)
-
-اپ دسکتاپ هیچ‌وقت `~/.local/bin/opencode` را اجرا نمی‌کند. نسخهٔ CLI خودش را در
-`<userData>/cli/<version>/opencode-cli` کپی می‌کند و همان را به‌عنوان سرور پس‌زمینه
-بالا می‌آورد؛ یعنی لین و pin کردن edge دور زده می‌شوند. چرخش IP در سطح میزبان انجام
-می‌شود، ولی وقتی اپ روی IPv4 حرف بزند `/64` جدید فایدهٔ کمتری دارد.
-
-`scripts/desktop-patch.sh` این را درست می‌کند:
-
-```bash
-./scripts/desktop-patch.sh install   # اپ باید بسته باشد
-./scripts/desktop-patch.sh status    # فعال است؟
-./scripts/desktop-patch.sh undo      # برگشت به حالت اصلی
-```
-
-باینری اصلی به `resources/opencode-cli.real` منتقل می‌شود، یک wrapper کوچک جایش
-می‌نشیند، و کپی‌هایی که اپ قبلاً در `~/.config` یا `~/.local/share` گذاشته هم
-wrap می‌شوند. لین فقط namespace کوه می‌سازد، پس اپ همچنان از طریق loopback به سرور
-خودش می‌رسد.
-
-> بعد از هر آپدیت اپ دسکتاپ دوباره `install` را اجرا کن — آپدیت، باینری اصلی را
-> برمی‌گرداند. این کار توسط OpenCode پشتیبانی نمی‌شود.
-
-## سازگاری
-
-- OpenCode **2.x** (توسعه با 2.2.7). برای V1 fallback جزئی وجود دارد (تشخیص از log،
-  بدون `--standalone`) اما نصب‌کننده V2 را هدف گرفته است.
-- **افزونه‌های IDE** (VS Code، JetBrains) همچنان wrapper را دور می‌زنند و از pin
-  کردن edge استفاده نمی‌کنند. فقط `opencode` ترمینالی و اپ دسکتاپ پچ‌شده از لین
-  عبور می‌کنند.
-- در حالت غیرفعال بودن سرویس مشترک، Pairing در V2 کار نمی‌کند.
-
-## اعتبار
-
-- پروژهٔ اصلی: [ElectronBreach/opencode-unlimited-usage](https://github.com/ElectronBreach/opencode-unlimited-usage) (MIT).
-- سازگارسازی V2: همین مخزن.
-- وابسته به OpenCode یا Cloudflare نیست.
-
-## مجوز
-
-MIT — فایل [LICENSE](LICENSE). اطلاعیهٔ کپی‌رایت اصلی حفظ شده است.
+<p dir="rtl" align="right">
+پروژهٔ اصلی: <a href="https://github.com/ElectronBreach/opencode-unlimited-usage">ElectronBreach/opencode-unlimited-usage</a> (MIT).<br>
+سازگارسازی V2: همین مخزن. مجوز MIT — فایل <a href="LICENSE">LICENSE</a>.
+</p>

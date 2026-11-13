@@ -4,6 +4,29 @@ All notable changes to this project are documented here.
 Format based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 Versioning follows [SemVer](https://semver.org/).
 
+## [2.0.1] — 2026-11-13
+
+Documentation and packaging pass: install with a single command, simpler docs,
+right-to-left Persian README.
+
+### Added
+
+- `get.sh` — one-command bootstrap:
+  `curl -fsSL .../main/get.sh | bash`. It downloads the bundle to a temp directory,
+  runs `install.sh` (or `uninstall.sh` with `--uninstall`) with `/dev/tty` on stdin
+  so sudo can prompt, then deletes the directory. Falls back to `git clone` if
+  `codeload` is unreachable, and honours `OUC_REF` / `OUC_REPO` for forks and tags.
+- One-command uninstall in the docs.
+
+### Changed
+
+- `README.md` rewritten: shorter, plain language, one-command install first.
+- `README.fa.md` rewritten as right-to-left HTML so Persian renders justified and
+  tidy on GitHub, with lists instead of tables.
+- `uninstall.sh` restores the desktop app's bundled CLI before deleting the scripts
+  it points at.
+- `Makefile` and CI also syntax-check `get.sh`.
+
 ## [2.0.0] — 2026-11-13
 
 First public release of the OpenCode 2.x port.
@@ -55,4 +78,5 @@ First public release of the OpenCode 2.x port.
 - Broad `2606:4700::/32` allow rule documented with an owner-scoped hardening
   variant.
 
+[2.0.1]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.1
 [2.0.0]: https://github.com/asgtey/opencode-unlimited-v2/releases/tag/v2.0.0

@@ -81,6 +81,7 @@ so traffic does not fall back to the physical interface.
 
 | File | Role |
 |---|---|
+| `get.sh` | one-command bootstrap: fetch bundle → `install.sh` / `uninstall.sh` |
 | `install.sh` | install/upgrade, services, sudoers, wrapper, PATH, verification |
 | `uninstall.sh` | full removal, restores V2 defaults |
 | `scripts/warp-keeper.sh` | root service: TUN mode + kill-switch |

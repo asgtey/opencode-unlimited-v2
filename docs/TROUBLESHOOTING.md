@@ -6,6 +6,24 @@ Run `opencode-unlimited-doctor` first. Every red line has a fix printed next to 
 
 ## Install-time
 
+### The one-command install stops immediately
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/asgtey/opencode-unlimited-v2/main/get.sh | bash
+```
+
+`get.sh` downloads the bundle to a temp folder. If you see
+`could not download the bundle`, either the network is blocked or `curl`/`wget`
+is missing. The manual route always works:
+
+```bash
+git clone https://github.com/asgtey/opencode-unlimited-v2.git
+cd opencode-unlimited-v2 && ./install.sh
+```
+
+If sudo never asks for a password, you are not on a terminal (for example inside a
+CI job). Run the `git clone` route instead.
+
 ### `unshare -rm fails — the lane will refuse to start`
 
 Ubuntu 24.04 and Mint 22.x restrict unprivileged user namespaces through AppArmor.

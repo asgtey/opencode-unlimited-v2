@@ -21,10 +21,10 @@ git clone https://github.com/asgtey/opencode-unlimited-v2.git
 cd opencode-unlimited-v2
 
 # syntax check (required before every commit)
-for f in install.sh uninstall.sh scripts/*.sh; do bash -n "$f"; done
+make check
 
 # optional: shellcheck
-shellcheck -S warning install.sh uninstall.sh scripts/*.sh
+shellcheck -S warning get.sh install.sh uninstall.sh scripts/*.sh
 ```
 
 Test on a **disposable VM** running Ubuntu 24.04 or Linux Mint 22.x. The installer
@@ -39,6 +39,9 @@ changes firewall rules, systemd units and a sudoers file.
 - Comments explain *why*, not *what*.
 - Keep user-facing messages short and actionable.
 - Persian and English docs are both maintained; update both when behaviour changes.
+- `README.fa.md` is raw HTML (`dir="rtl"`), because GitHub markdown has no RTL
+  switch. Keep its structure consistent (one `<h2>` per section, `<ul>`/`<ol>` for
+  lists, `<pre dir="ltr">` for commands) rather than mixing markdown back in.
 
 ## Pull requests
 
