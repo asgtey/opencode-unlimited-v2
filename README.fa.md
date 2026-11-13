@@ -146,18 +146,18 @@ OpenCode 2 دو چیز را عوض کرد که اسکریپت‌های نسخه�
 pair به سرور مشترک نیاز دارد و این پروژه آن را خاموش می‌کند. سه قدم:
 </p>
 
-<ol dir="rtl">
-  <li>روشنش کن:
+<p dir="rtl" align="right"><b>۱.</b> روشنش کن:</p>
+
 <pre dir="ltr" align="left"><code>opencode service unset disabled
 opencode service start</code></pre>
-  </li>
-  <li>لینک بگیر و روی دستگاه دیگر باز کن (یا QR را با اپ OpenCode اسکن کن):
+
+<p dir="rtl" align="right"><b>۲.</b> لینک بگیر و روی دستگاه دیگر باز کن (یا QR را با اپ OpenCode اسکن کن):</p>
+
 <pre dir="ltr" align="left"><code>opencode pair</code></pre>
-  </li>
-  <li>دوباره خاموشش کن — این قدم را جا نینداز:
+
+<p dir="rtl" align="right"><b>۳.</b> دوباره خاموشش کن — این قدم را جا نینداز:</p>
+
 <pre dir="ltr" align="left"><code>opencode service set disabled true</code></pre>
-  </li>
-</ol>
 
 <p dir="rtl" align="right">
 شبکهٔ دیگر؟ <code>opencode pair --remote</code> — از راه SSH؟ اول پورت را فوروارد کن:
