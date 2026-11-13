@@ -62,6 +62,10 @@ echo ""
 # covers the sudo calls of the second pass and is deleted before we exit.
 if [ "$(id -u)" = 0 ]; then
   SELF="$SRC/install.sh"
+  # `[ -r /dev/tty ]` lies when there is no controlling terminal; opening it is
+  # the only reliable test.
+  HAVE_TTY=0
+  if { : < /dev/tty; } 2>/dev/null; then HAVE_TTY=1; fi
   echo ""
   say "you are root. this project installs per user, so I will create a normal"
   say "account and continue as that account."
@@ -69,7 +73,11 @@ if [ "$(id -u)" = 0 ]; then
 
   printf "  username for the new account [opencode]: "
   NEWUSER=""
-  if [ -r /dev/tty ]; then read -r NEWUSER < /dev/tty || true; fi
+  if [ "$HAVE_TTY" = 1 ]; then
+    read -r NEWUSER < /dev/tty 2>/dev/null || NEWUSER=""
+  else
+    read -r NEWUSER 2>/dev/null || NEWUSER=""
+  fi
   NEWUSER="${NEWUSER:-opencode}"
   case "$NEWUSER" in
     ''|*[!a-z0-9_-]*) die "invalid username '$NEWUSER' — lowercase letters, digits, - and _ only" ;;
@@ -130,10 +138,18 @@ if [ "$(id -u)" = 0 ]; then
   echo ""
   say "starting the installer again as '$NEWUSER'…"
   echo ""
-  if command -v runuser >/dev/null 2>&1; then
-    runuser -l "$NEWUSER" -c "bash '$SELF'" < /dev/tty
+  if [ "$HAVE_TTY" = 1 ]; then
+    if command -v runuser >/dev/null 2>&1; then
+      runuser -l "$NEWUSER" -c "bash '$SELF'" < /dev/tty
+    else
+      su - "$NEWUSER" -c "bash '$SELF'" < /dev/tty
+    fi
   else
-    su - "$NEWUSER" -c "bash '$SELF'" < /dev/tty
+    if command -v runuser >/dev/null 2>&1; then
+      runuser -l "$NEWUSER" -c "bash '$SELF'" < /dev/null
+    else
+      su - "$NEWUSER" -c "bash '$SELF'" < /dev/null
+    fi
   fi
   RC=$?
 
